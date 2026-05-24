@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('folders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->text('description')->nullable();
+            $table->unique(['name', 'user_id']);
             $table->timestamps();
         });
     }

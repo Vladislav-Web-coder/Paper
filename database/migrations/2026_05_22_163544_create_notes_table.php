@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('content');
-            $table->text('is_pinned');
+            $table->boolean('is_pinned')->default(false);
             $table->timestamps();
         });
     }

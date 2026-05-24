@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('folder_note', function (Blueprint $table) {
-            $table->primary(['folder_id', 'note_id']);
             $table->foreignId('folder_id')->index()->constrained()->cascadeOnDelete();
             $table->foreignId('note_id')->index()->constrained()->cascadeOnDelete();
+            $table->primary(['folder_id', 'note_id']);
             $table->timestamps();
         });
     }

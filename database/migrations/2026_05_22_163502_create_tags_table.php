@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('tags', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->timestamps();
+            $table->unique(['name', 'user_id']);
         });
     }
 
