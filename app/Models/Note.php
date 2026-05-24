@@ -12,6 +12,13 @@ class Note extends Model
         'name',
         'content',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_pinned' => 'boolean',
+        ];
+    }
     public function folder(): BelongsToMany
     {
         return $this->belongsToMany(Folder::class);
