@@ -49,10 +49,4 @@ class StoreNoteRequest extends FormRequest
             'tags_name.*' => 'string|max:50',
         ];
     }
-    public function after(): array
-    {
-        return [
-
-        ]
-    }
 }
