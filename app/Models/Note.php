@@ -19,7 +19,15 @@ class Note extends Model
             'is_pinned' => 'boolean',
         ];
     }
-    public function folder(): BelongsToMany
+    protected static function booted()
+    {
+        static::deleting(function ($note){
+            $note->tags()->detach();
+            $note->foleders()->delete();
+        });
+    }
+
+    public function folders(): BelongsToMany
     {
         return $this->belongsToMany(Folder::class);
     }

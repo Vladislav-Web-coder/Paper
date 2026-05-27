@@ -13,7 +13,7 @@ class NotePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -35,9 +35,9 @@ class NotePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Note $note): bool
+    public function update(User $user, Note $note): Response
     {
-        return $user->id === $note->user_id;
+        return $user->id === $note->user_id ? Response::allow() : Response::denyAsNotFound();
     }
 
     /**
