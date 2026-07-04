@@ -15,7 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             [
                 '/*',
             ]
-        );
+        )
+        ->appendToGroup('web', [
+            \App\Http\Middleware\SetAppLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

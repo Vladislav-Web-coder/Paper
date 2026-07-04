@@ -6,7 +6,7 @@ use Illuminate\Support\Str;
 
 trait NormalizeRequestData
 {
-     final protected function prepareForValidation()
+    final protected function prepareForValidation()
     {
         $updates = [];
         if($this->has('tags_name')) {

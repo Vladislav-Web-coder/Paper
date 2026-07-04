@@ -23,11 +23,23 @@ class NoteController extends Controller
     {
         Gate::authorize('viewAny', Note::class);
         $user = $request->user();
-        $notes = Note::with('tags', 'folders')
-            ->where('user_id', $user)
+
+        $page = $request->page ?? 1;
+
+        // Cache only note Ids for current page
+        $noteIds = Cache::remember('user:{$user->id}:notes:ids:page:{$page}', now()->addMinutes(10), function () use ($user) {
+            return $user->notes()
+                ->latest()
+                ->paginate(30)
+                ->pluck('id')
+                ->toArray();
+        });
+
+        $notes = Note::select(['id', 'name', 'created_at'])
+            ->whereIn('id', $noteIds)
             ->latest()
-            ->paginate(30);
-        return view ('notes.index', compact('notes'));
+            ->get();
+        return view ('notes.index', ['notes' => $notes]);
     }
 
     /**
@@ -39,7 +51,10 @@ class NoteController extends Controller
         $user = $request->user();
         $folders = $user->folders()->pluck('name','id');
         $tags = $user->tags()->pluck('name','id');
-        return view('notes.create', compact('folders', 'tags'));
+        return view('notes.create', [
+            'folders' => $folders,
+            'tags' => $tags
+        ]);
     }
 
     /**
@@ -51,25 +66,23 @@ class NoteController extends Controller
         $note = $this->noteService->createNote($data);
 
         return redirect()
-            ->route('notes.show', $note->id)
+            ->route('notes.show', $note)
             ->with('success', 'Note created successfully.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $user = auth()->user();
+        $user = $request->user();
         $noteInfo = Note::select('id', 'user_id')->findOrFail($id);
         Gate::authorize('view', $noteInfo);
-        $note = Cache::remember('user:{$user->id}:notes:{$id}', 3600, function () use ($id) {
-            return Note::with('tags', 'folders')
-                ->findOrFail($id)
-                ->toArray();
+        $note = Cache::remember('user:{$user->id}:note:{$id}', now()->addMinutes(10), function () use ($id) {
+            return Note::findOrFail($id)->toArray();
         });
-        // return view('notes.show', compact('note'));
-        return response()->json($note);
+
+        return view('notes.show', ['note' => $note]);
     }
 
     /**
@@ -79,13 +92,14 @@ class NoteController extends Controller
     {
         Gate::authorize('update', $note);
         $note->with('tags', 'folders');
-        return view('notes.edit', compact('note'));
+
+        return view('notes.edit', ['note' => $note]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateNoteRequest $request, string $id)
+    public function update(UpdateNoteRequest $request, $id)
     {
         $data = $request->validated();
         $note = $this->noteService->updateNote($data, $id);
@@ -98,11 +112,19 @@ class NoteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Note $note): RedirectResponse
+    public function destroy(Request $request, Note $note): RedirectResponse
     {
         Gate::authorize('delete', $note);
 
+        $user = $request->user();
+        $folders = $user->folders()->pluck('id');
+
+        foreach ($folders as $folder) {
+            $this->noteService->clearFolderCacheByFolderId($user->id, $folder);
+        }
+
         $note->delete();
+
 
         return redirect()
             ->route('notes.index')

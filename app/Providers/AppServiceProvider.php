@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Folder;
+use App\Observers\NoteObserver;
+use App\Observers\FolderObserver;
+use App\Models\Note;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Note::observe(NoteObserver::class);
+        Folder::observe(FolderObserver::class);
     }
 }
