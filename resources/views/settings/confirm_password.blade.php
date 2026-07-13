@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">Confirm Password</x-slot>
 
     <div class="max-w-md mx-auto my-12">
@@ -42,4 +42,4 @@
             </form>
         </div>
     </div>
-</x-app-layout>
+</x-layout>

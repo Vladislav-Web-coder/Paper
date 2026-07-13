@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">Account Settings</x-slot>
 
     <!-- Шапка страницы -->
@@ -395,4 +395,4 @@
             @endif
         </div>
     </div>
-</x-app-layout>
+</x-layout>

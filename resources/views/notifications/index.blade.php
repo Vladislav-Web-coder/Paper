@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">Notifications</x-slot>
 
     <!-- Шапка страницы -->
@@ -117,4 +117,4 @@
             </div>
         @endif
     </div>
-</x-app-layout>
+</x-layout>

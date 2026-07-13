@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">My Notes</x-slot>
 
     <!-- Шапка страницы и поиск -->
@@ -198,4 +198,4 @@
             }
         </style>
     @endpush
-</x-app-layout>
+</x-layout>
