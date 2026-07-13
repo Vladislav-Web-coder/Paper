@@ -12,7 +12,7 @@ class NoteObserver
      */
     public function created(Note $note): void
     {
-        $this->clearGeneralIndexCache($note->user_id);
+        $this->clearNotesIndexCache($note->user_id);
     }
 
     /**
@@ -20,8 +20,7 @@ class NoteObserver
      */
     public function updated(Note $note): void
     {
-        Cache::forget("user:{$note->user_id}:note:{$note->id}");
-        $this->clearGeneralIndexCache($note->user_id);
+        $this->clearNotesIndexCache($note->user_id);
     }
 
     /**
@@ -29,20 +28,10 @@ class NoteObserver
      */
     public function deleted(Note $note): void
     {
-        Cache::forget("user:{$note->user_id}:note:{$note->id}");
-        $this->clearGeneralIndexCache($note->user_id);
+        $this->clearNotesIndexCache($note->user_id);
     }
-    private function clearGeneralIndexCache(int $userId): void
+    private function clearNotesIndexCache(int $userId): void
     {
-        $redis = redis();
-        $prefix = config('database.redis.options.prefix', '');
-        $mask = $prefix . "user:{$userId}:notes:ids:page:*";
-
-        $keys = $redis->keys($mask);
-        if (!empty($keys)) {
-            foreach ($keys as $key) {
-                Cache::forget(str_replace($prefix, '', $key));
-            }
-        }
+        Cache::tags(["user:{$userId}:notes"])->flush();
     }
 }

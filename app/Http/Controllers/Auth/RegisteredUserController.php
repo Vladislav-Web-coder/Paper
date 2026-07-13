@@ -24,7 +24,7 @@ class RegisteredUserController extends Controller
             'email' => $validated["email"],
             'password' => Hash::make($validated["password"]),
         ]);
-//        event(new Registered($user));
+        event(new Registered($user));
         Auth::login($user);
         return redirect()
             ->route('dashboard');

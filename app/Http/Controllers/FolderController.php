@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateFolderRequest;
 use App\Http\Requests\UpdateFolderRequest;
 use App\Models\Folder;
+use App\Models\Note;
+use App\Models\Tag;
 use App\Services\FolderService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
@@ -20,21 +23,30 @@ class FolderController extends Controller
         Gate::authorize('viewAny', Folder::class);
 
         $user = $request->user();
-        $page = $request->page ?? 1;
+        $page = $request->query('page', 1);
+        $perPage = 12;
 
         // Cache only folder Ids for current page
-        $folderIds = Cache::remember('user:{$user->id}:folders:ids:page:{$page}', now()->addMinutes(10), function () use ($user) {
-            return $user->folders()
+        $cachedData = Cache::tags("user:{$user->id}:folders:index")->remember("page:{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
+            $paginator = $user->folders()
+                ->select(['folders.id', 'folders.name', 'folders.description', 'folders.created_at'])
                 ->latest()
-                ->paginate(30)
-                ->pluck('id')
-                ->toArray();
+                ->paginate($perPage);
+            return [
+                'items' => $paginator->getCollection()->toArray(),
+                'total' => $paginator->total(),
+            ];
         });
 
-        $folders = Folder::select(['id', 'name', 'description'])
-            ->whereIn('id', $folderIds)
-            ->latest()
-            ->get();
+        $foldersCollection = Folder::hydrate($cachedData['items']);
+
+        $folders = new LengthAwarePaginator(
+            $foldersCollection,
+            $cachedData['total'],
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
         return view('folders.index', ['folders' => $folders]);
     }
 
@@ -47,24 +59,47 @@ class FolderController extends Controller
             ->route('folders.show', $folder);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, Folder $folder)
     {
         $user = $request->user();
-        $folder = Folder::select('id', 'user_id')->findOrFail($id);
-        $page = $request->page ?? 1;
+        $page = $request->query('page', 1);
+        $perPage = 12;
 
         Gate::authorize('view', $folder);
 
-        $notes = Cache::remember('user:{$user->id}:folder:{$id}:page:{$page}', now()->addMinutes(30), function () use ($id) {
-            $folder = Folder::findOrFail($id);
-            return $folder->notes()
-                ->select(['id', 'name', 'created_at'])
+        $cachedData = Cache::tags(["user:{$user->id}:folder:{$folder->id}"])->remember("page:{$page}", now()->addMinutes(30), function () use ($folder, $perPage) {
+            $paginator = $folder->notes()
+                ->select(['notes.id', 'notes.name', 'notes.content','notes.created_at'])
+                ->with('tags:id,name')
                 ->latest()
-                ->paginate(30);
+                ->paginate($perPage);
+            return [
+                'items' => $paginator->getCollection()->toArray(),
+                'total' => $paginator->total(),
+            ];
         });
 
+        $notesCollection = Note::hydrate($cachedData['items']);
+        $notesCollection->each(function($note) {
+            $rawTags = $note->getAttribute('tags');
+
+            $note->setRelations([
+                'tags' => Tag::hydrate($rawTags) ?? [],
+            ]);
+            unset($note->folders, $note->tags);
+        });
+
+        $notes = new LengthAwarePaginator(
+            $notesCollection,
+            $cachedData['total'],
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('folders.show', [
-            'notes' => $notes
+            'notes' => $notes,
+            'folder' => $folder
         ]);
     }
     public function update(UpdateFolderRequest $request, $id)

@@ -25,7 +25,7 @@ class SetAppLocale
             $locale = session('locale');
         }
         else {
-            $browserLocale = $request->getPreferredLanguage(AppLanguage::options());
+            $browserLocale = $request->getPreferredLanguage(AppLanguage::values());
 
             if($browserLocale) {
                 $locale = $browserLocale;

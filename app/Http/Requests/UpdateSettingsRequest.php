@@ -3,11 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Enums\AppLanguage;
+use App\Enums\NotificationChannel;
 use App\Enums\SettingsTab;
+use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Carbon;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class UpdateSettingsRequest extends FormRequest
@@ -24,7 +24,7 @@ class UpdateSettingsRequest extends FormRequest
         if($this->input('current_tab') === SettingsTab::PRIVACY->value) {
             $confirmedAt = session('last_confirmed_password_at');
 
-            if(!$confirmedAt || $confirmedAt->diffInMinutes(now()) >= 10) {
+            if(!$confirmedAt || Carbon::parse($confirmedAt)->diffInMinutes(now()) >= 10) {
                 return false;
             }
         }
@@ -32,14 +32,28 @@ class UpdateSettingsRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
-        $this->mergeIfMissing(['theme' => 'system']);
-
+        if ($this->input('current_tab') === SettingsTab::INTERFACE->value) {
+            $this->mergeIfMissing([
+                'theme' => 'system',
+                'greeting' => 'Hello Boss'
+            ]);
+        }
         if($this->input('current_tab') === SettingsTab::NOTIFICATIONS->value) {
+            $channels = is_array($this->input('notification_channels'))
+                ? array_filter($this->input('notification_channels'))
+                : [];
             $this->merge([
                 'notify_email' => $this->boolean('notify_email'),
                 'subscribe_updates' => $this->boolean('subscribe_updates'),
+                'notifications_channels' => $channels,
+            ]);
+        }
+        if($this->input('current_tab') === SettingsTab::PRIVACY->value) {
+            $this->merge([
+                'profile_visibility' => $this->boolean('profile_visibility'),
+                'two_factor_enabled' => $this->boolean('two_factor_enabled'),
             ]);
         }
     }
@@ -55,16 +69,42 @@ class UpdateSettingsRequest extends FormRequest
             'current_tab' => ['required', 'string', new Enum(SettingsTab::class)],
 
             // Rules for Interface tab
-            'theme' => ['required_if:current_tab' . SettingsTab::INTERFACE->value, 'string', 'in:system,light,dark'],
-            'timezone' => ['required_if:current_tab' . SettingsTab::INTERFACE->value, 'string', 'timezone'],
-            'language' => ['required_if:current_tab' . SettingsTab::INTERFACE->value, 'string', Rule::in(config('app.available_locales'), ['en'])],
+            'theme' => [
+                'exclude_unless:current_tab,' . SettingsTab::INTERFACE->value,
+                'string',
+                'in:system,light,dark'
+            ],
+            'timezone' => [
+                'exclude_unless:current_tab,' . SettingsTab::INTERFACE->value,
+                'string',
+                'timezone'
+            ],
+            'language' => [
+                'exclude_unless:current_tab,' . SettingsTab::INTERFACE->value,
+                'string',
+                new Enum(AppLanguage::class)
+            ],
+            'greeting' => [
+                'exclude_unless:current_tab,' . SettingsTab::INTERFACE->value,
+                'string'
+            ],
 
             // Rules for Notifications tab
-            'notify_email' => ['exclude_unless:current_tab' . SettingsTab::NOTIFICATIONS->value,'required', 'boolean'],
-            'subscribe_updates' => ['exclude_unless:current_tab' . SettingsTab::NOTIFICATIONS->value,'required', 'boolean'],
+            'notify_email' => ['exclude_unless:current_tab,' . SettingsTab::NOTIFICATIONS->value, 'boolean'],
+            'subscribe_updates' => ['exclude_unless:current_tab,' . SettingsTab::NOTIFICATIONS->value, 'boolean'],
+            'notification_channels' => [
+                'exclude_unless:current_tab,' . SettingsTab::NOTIFICATIONS->value,
+                'array'
+            ],
+            'notification_channels.*' => [
+                'exclude_unless:current_tab,' . SettingsTab::NOTIFICATIONS->value,
+                'string',
+                new Enum(NotificationChannel::class)
+            ],
 
             // Rules for Privacy tab
-            'profile_visibility' => ['exclude_unless:current_tab' . SettingsTab::PRIVACY->value, 'required', 'string', 'in:private,public,friend'],
+            'profile_visibility' => ['exclude_unless:current_tab,' . SettingsTab::PRIVACY->value, 'boolean'],
+            'two_factor_enabled' => ['exclude_unless:current_tab,' . SettingsTab::PRIVACY->value, 'boolean'],
         ];
     }
 }

@@ -8,7 +8,7 @@ enum SettingsTab: string
     case NOTIFICATIONS = 'notifications';
     case PRIVACY = 'privacy';
 
-    public function values(): array
+    public static function values(): array
     {
         return array_column(self::cases(), 'value');
     }

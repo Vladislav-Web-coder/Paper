@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreNoteRequest;
 use App\Http\Requests\UpdateNoteRequest;
+use App\Models\Tag;
 use App\Services\NoteService;
 use App\Models\Note;
+use App\Models\Folder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Symfony\Component\Mime\HtmlToTextConverter\LeagueHtmlToMarkdownConverter;
 
 class NoteController extends Controller
 {
@@ -23,22 +27,42 @@ class NoteController extends Controller
     {
         Gate::authorize('viewAny', Note::class);
         $user = $request->user();
-
-        $page = $request->page ?? 1;
+        $page = $request->query('page', 1);
+        $perPage = 12;
 
         // Cache only note Ids for current page
-        $noteIds = Cache::remember('user:{$user->id}:notes:ids:page:{$page}', now()->addMinutes(10), function () use ($user) {
-            return $user->notes()
+        $cachedData = Cache::tags(["user:{$user->id}:notes"])->remember("page:{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
+            $paginator = $user->notes()
+                ->select(['notes.id', 'notes.name', 'notes.content', 'notes.created_at'])
+                ->with(['tags:id,name', 'folders:id,name'])
                 ->latest()
-                ->paginate(30)
-                ->pluck('id')
-                ->toArray();
+                ->paginate($perPage);
+            return [
+                'items' => $paginator->getCollection()->toArray(),
+                'total' => $paginator->total(),
+            ];
         });
 
-        $notes = Note::select(['id', 'name', 'created_at'])
-            ->whereIn('id', $noteIds)
-            ->latest()
-            ->get();
+        $notesCollection = Note::hydrate($cachedData['items']);
+
+        $notesCollection->each(function ($note) {
+            $rawTags = $note->getAttribute('tags') ?? [];
+            $rawFolders = $note->getAttribute('folders') ?? [];
+
+            $note->setRelations([
+                'tags' => Tag::hydrate($rawTags),
+                'folders' => Folder::hydrate($rawFolders),
+            ]);
+            unset($note->folders, $note->tags);
+        });
+
+        $notes = new LengthAwarePaginator(
+            $notesCollection,
+            $cachedData['total'],
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
         return view ('notes.index', ['notes' => $notes]);
     }
 
@@ -73,27 +97,29 @@ class NoteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, $id)
+    public function show(Request $request, Note $note)
     {
-        $user = $request->user();
-        $noteInfo = Note::select('id', 'user_id')->findOrFail($id);
-        Gate::authorize('view', $noteInfo);
-        $note = Cache::remember('user:{$user->id}:note:{$id}', now()->addMinutes(10), function () use ($id) {
-            return Note::findOrFail($id)->toArray();
-        });
-
+        Gate::authorize('view', $note);
         return view('notes.show', ['note' => $note]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Note $note): View
+    public function edit(Request $request, Note $note): View
     {
         Gate::authorize('update', $note);
-        $note->with('tags', 'folders');
+        $note->load(['tags', 'folders']);
 
-        return view('notes.edit', ['note' => $note]);
+        $user = $request->user();
+        $folders = $user->folders()->pluck('name', 'id');
+        $tags = $user->tags()->pluck('name', 'id');
+
+        return view('notes.edit', [
+            'note' => $note,
+            'folders' => $folders,
+            'tags' => $tags
+        ]);
     }
 
     /**
@@ -129,5 +155,17 @@ class NoteController extends Controller
         return redirect()
             ->route('notes.index')
             ->with('success', 'Note deleted successfully.');
+    }
+    public function pin(Request $request,Note $note): RedirectResponse
+    {
+        $user = $request->user();
+        if($note->user_id !== $user->id) {
+            abort(403);
+        }
+        $note->is_pinned = !$note->is_pinned;
+        $note->save();
+
+        $message = $note->is_pinned ? 'Note pinned successfully.' : 'Note unpinned successfully.';
+        return back()->with('success', $message);
     }
 }

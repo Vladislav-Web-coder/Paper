@@ -26,7 +26,7 @@ class StoreNoteRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string|max:2295',
             'folder_name' => 'nullable|array',
             'folder_name.*' => 'string|max:50',
             'tags_name' => 'nullable|array',

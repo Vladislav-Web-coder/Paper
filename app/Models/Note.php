@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class Note extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'name',
         'content',
@@ -24,7 +26,7 @@ class Note extends Model
     {
         static::deleting(function ($note){
             $note->tags()->detach();
-            $note->foleders()->detach();
+            $note->folders()->detach();
         });
         static::saved(function ($note){
             $note->updateSearchVector();
@@ -43,22 +45,24 @@ class Note extends Model
     {
         return $this->belongsToMany(Tag::class);
     }
-
     public function updateSearchVector(): void
     {
+        // Get tags directly form db (or empty string if none)
         $tagsName = $this->tags()->pluck('name')->implode(' ');
 
-        DB::table('notes')
-            ->where('id', $this->id)
-            ->update([
-                'search_vector' => DB::raw(sprintf(
-                    "setweight(to_tsvector('simple', %s), 'A') || ".
-                    "setweight(to_tsvector('simple', %s), 'B') || " .
-                    "setweight(to_tsvector('simple', %s), 'C') || ",
-                    DB::getPdo()->quote($this->name),
-                    DB::getPdo()->quote($tagsName),
-                    DB::getPdo()->quote($this->content ?? ''),
-                ))
-            ]);
+        DB::statement("
+            UPDATE notes
+            SET search_vector =
+                setweight(to_tsvector('simple', coalesce(:name, '')), 'A') ||
+                setweight(to_tsvector('simple', coalesce(:tags, '')), 'B') ||
+                setweight(to_tsvector('simple', coalesce(:content, '')), 'C')
+            WHERE id = :id
+        ", [
+            'name' => $this->name,
+            'tags' => $tagsName,
+            'content' => $this->content,
+            'id' => $this->id,
+        ]);
     }
+
 }

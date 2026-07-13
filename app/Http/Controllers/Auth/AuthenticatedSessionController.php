@@ -11,13 +11,20 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-//    public function create(): View
-//    {
-//         return view('auth.login');
-//    }
+    public function create(): View
+    {
+         return view('auth.login');
+    }
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+        $user = auth()->user();
+
+        if ($user->settings->two_factor_enabled) {
+            session(['auth.2fa.attempted_user_id' => $user->id]);
+
+            return redirect()->route('2fa.login');
+        }
 
         $request->session()->regenerate();
 

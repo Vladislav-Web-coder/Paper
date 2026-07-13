@@ -12,7 +12,8 @@ class FolderObserver
      */
     public function created(Folder $folder): void
     {
-        $this->clearFoldersIndexCache($folder->user_id);
+        $userId = $folder->user_id;
+        $this->clearFoldersIndexCache($userId);
     }
 
     /**
@@ -20,9 +21,11 @@ class FolderObserver
      */
     public function updated(Folder $folder): void
     {
-        $this->clearSingleFolderPagesCache($folder->user_id, $folder->id);
+        $userId = $folder->user_id;
+        $folderId = $folder->id;
 
-        $this->clearFoldersIndexCache($folder->user_id);
+        $this->clearFoldersIndexCache($userId);
+        $this->clearFoldersShowCache($userId, $folderId);
     }
 
     /**
@@ -30,31 +33,19 @@ class FolderObserver
      */
     public function deleted(Folder $folder): void
     {
-        $this->clearSingleFolderPagesCache($folder->user_id, $folder->id);
+        $userId = $folder->user_id;
+        $folderId = $folder->id;
 
-        $this->clearFoldersIndexCache($folder->user_id);
+        $this->clearFoldersIndexCache($userId);
+        $this->clearFoldersShowCache($userId, $folderId);
     }
 
     private function clearFoldersIndexCache(int $userId): void
     {
-        $this->clearByMask("user:{$userId}:folders:ids:page:*");
+        Cache::tags(["user:{$userId}:folders:index"])->flush();
     }
-    private function clearSingleFolderPagesCache(int $userId, int $folderId): void
+    private function clearFoldersShowCache(int $userId, int $folderId): void
     {
-        $this->clearByMask("user:{$userId}:folder:{$folderId}:page:*");
-    }
-    private function clearByMask(string $cacheMask): void
-    {
-        $redis = redis();
-        $prefix = config('database.redis.options.prefix', '');
-
-        $mask = $prefix . $cacheMask;
-        $keys = $redis->key($mask);
-
-        if (!empty($keys)) {
-            foreach ($keys as $key) {
-                Cache::forget(str_replace($prefix, '', $key));
-            }
-        }
+        Cache::tags(["user:{$userId}:folder:{$folderId}"])->flush();
     }
 }
