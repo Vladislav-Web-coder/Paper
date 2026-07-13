@@ -1,8 +1,12 @@
 @import 'tailwindcss';
+<<<<<<< HEAD
 @import 'easymde/dist/easymde.min.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+=======
+
+>>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
