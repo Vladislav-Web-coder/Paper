@@ -80,8 +80,11 @@ return [
 
     'locale' => env('APP_LOCALE', 'en'),
 
+<<<<<<< HEAD
     'available_locales' => \App\Enums\AppLanguage::options(),
 
+=======
+>>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),

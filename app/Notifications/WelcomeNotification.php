@@ -2,13 +2,12 @@
 
 namespace App\Notifications;
 
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TwoFactorEnabledNotification extends Notification
+class WelcomeNotification extends Notification
 {
     use Queueable;
 
@@ -27,7 +26,7 @@ class TwoFactorEnabledNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->settings->notification_channels;
+        return ['mail', 'database'];
     }
 
     /**
@@ -36,8 +35,9 @@ class TwoFactorEnabledNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('2FA is enabled on this account.')
-            ->line('Thank you for using our application!');
+            ->line('Welcome to ' . config('app.name', 'Paper'))
+            ->action('Create your first note', route('dashboard'))
+            ->line('Thank you for creating an account. Start organizing your notes.');
     }
 
     /**
@@ -48,7 +48,9 @@ class TwoFactorEnabledNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => "2FA is enabled on this account.",
+            'title' => 'Welcome to ' . config('app.name', 'Paper'),
+            'message' => 'Thank you for creating an account. Start organizing your notes.',
+            'action' => route('notes.index'),
         ];
     }
 }

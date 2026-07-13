@@ -5,10 +5,11 @@ namespace App\Listeners;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-class SendWelcomeNotification implements ShouldQueue
+class SendWelcomeNotification
 {
-    public bool $afterCommit = true;
+    public $afterCommit = true;
     /**
      * Create the event listener.
      */
@@ -22,6 +23,7 @@ class SendWelcomeNotification implements ShouldQueue
      */
     public function handle(Registered $event): void
     {
-        $event->user->notify(new WelcomeNotification());
+        $user = $event->user;
+        $user->notify(new WelcomeNotification());
     }
 }
