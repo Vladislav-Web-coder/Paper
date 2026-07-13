@@ -1,6 +1,4 @@
 <?php
-
-<<<<<<< HEAD
 use App\Http\Controllers\Api\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NoteController;
@@ -10,14 +8,10 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Middleware\CheckTwoFactor;
-=======
-use Illuminate\Support\Facades\Route;
->>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
 
 Route::get('/', function () {
     return view('welcome');
 });
-<<<<<<< HEAD
 
 Route::middleware('auth')->group(function () {
     Route::middleware([CheckTwoFactor::class])->group(function () {
@@ -56,5 +50,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-=======
->>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
