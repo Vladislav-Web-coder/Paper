@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">{{ $note->name }} — My Notes</x-slot>
 
     <div class="space-y-6 max-w-4xl mx-auto">
@@ -67,4 +67,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layout>

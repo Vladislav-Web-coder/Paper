@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">Dashboard</x-slot>
 
     <!-- Шапка страницы и поиск -->
@@ -132,4 +132,4 @@
         </div>
 
     </div>
-</x-app-layout>
+</x-layout>

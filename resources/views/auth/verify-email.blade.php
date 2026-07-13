@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">Verify Email</x-slot>
 
     <div class="max-w-md mx-auto my-12">
@@ -50,4 +50,4 @@
 
         </div>
     </div>
-</x-app-layout>
+</x-layout>

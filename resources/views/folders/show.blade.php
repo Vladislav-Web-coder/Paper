@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot name="title">Folder: {{ $folder->name }}</x-slot>
 
     <!-- Шапка страницы и действия -->
@@ -170,4 +170,4 @@
             }
         </style>
     @endpush
-</x-app-layout>
+</x-layout>

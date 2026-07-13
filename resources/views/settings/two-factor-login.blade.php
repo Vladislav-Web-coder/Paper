@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot:title>Two-Factor Challenge - {{ config('app.name') }}</x-slot:title>
 
     <div class="max-w-md mx-auto py-6">
@@ -56,4 +56,4 @@
 
         </div>
     </div>
-</x-app-layout>
+</x-layout>

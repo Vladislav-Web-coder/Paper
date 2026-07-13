@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layout>
     <x-slot:title>Setup Two-Factor Authentication - {{ config('app.name') }}</x-slot:title>
 
     <div class="max-w-md mx-auto">
@@ -118,5 +118,5 @@
             });
         </script>
     @endpush
-</x-app-layout>
+</x-layout>
 
