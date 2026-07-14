@@ -46,4 +46,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Note::class);
     }
+    public function saveSettings(array $data): void
+    {
+        $this->settings = $this->settings->update($data);
+        $this->save();
+    }
 }

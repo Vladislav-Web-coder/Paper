@@ -56,7 +56,7 @@
             @elseif($currentTab === 'notifications')
                 <x-settings.notifications :settings="$settings" />
             @elseif($currentTab === 'privacy')
-                <x-settings.privacy :settings="$settings" />
+                <x-settings.privacy :settings="$settings" :sessions="$sessions" />
             @endif
         </div>
     </div>

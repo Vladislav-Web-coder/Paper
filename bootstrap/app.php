@@ -12,14 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->validateCsrfTokens(except:
-            [
-                'api/telegram/webhook',
-                '/*',
-            ]
-        )
-        ->appendToGroup('web', [
+        $middleware->web([
             \App\Http\Middleware\SetAppLocale::class,
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
+            \App\Http\Middleware\TrackSessionAttributes::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

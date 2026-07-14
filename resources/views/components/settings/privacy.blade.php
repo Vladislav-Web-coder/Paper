@@ -1,3 +1,4 @@
+@props(['settings', 'sessions' => []])
 <div class="space-y-8">
     <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
         @csrf
@@ -136,6 +137,74 @@
                 </button>
             </div>
         </form>
+    </div>
+
+    <!-- Секция: Активные сессии -->
+    <div class="border-t border-gray-100 pt-6">
+        <div class="mb-4">
+            <h3 class="text-base font-bold text-gray-900 mb-1">Active Sessions</h3>
+            <p class="text-xs text-gray-500">Manage and logout your active sessions on other browsers and devices.</p>
+        </div>
+
+        <!-- Список устройств -->
+        <div class="space-y-3 mb-6">
+            @foreach($sessions as $session)
+                <div class="flex items-center justify-between p-3.5 border border-gray-100 rounded-xl bg-gray-50/50">
+                    <div class="flex items-center gap-3">
+                        <!-- Иконка устройства -->
+                        <div class="p-2 bg-white rounded-lg border border-gray-100 text-gray-400">
+                            @if(($session['platform'] ?? '') === 'Macintosh' || ($session['platform'] ?? '') === 'OS X' || ($session['platform'] ?? '') === 'Windows')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            @else
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H13.5A2.25 2.25 0 0115.75 3.75V20.25A2.25 2.25 0 0113.5 22.5H10.5A2.25 2.25 0 018.25 20.25V3.75A2.25 2.25 0 0110.5 1.5Z" /></svg>
+                            @endif
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-gray-900">
+                                {{ $session['browser'] ?? 'Unknown Browser' }} on {{ $session['platform'] ?? 'Unknown OS' }}
+                            </span>
+                                @if($session['is_current_device'] ?? false)
+                                    <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-medium rounded-full border border-indigo-100">This device</span>
+                                @endif
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                {{ $session['ip_address'] ?? 'Unknown IP' }} — Active {{ $session['last_active'] ?? 'Just now' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Кнопка выхода со всех остальных устройств -->
+        @if(count($sessions) > 1)
+            <form action="{{ route('settings.sessions.logout') }}" method="POST" class="p-4 bg-rose-50/50 border border-rose-100 rounded-xl space-y-4">
+                @csrf
+                <div>
+                    <h4 class="text-sm font-semibold text-rose-900">Logout other devices</h4>
+                    <p class="text-xs text-rose-700 mt-0.5">Please confirm your identity to revoke access from all other browser sessions.</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 items-end">
+                    @if(auth()->user()->settings->two_factor_enabled)
+                        <div class="w-full sm:max-w-xs">
+                            <input type="text" name="code" placeholder="Enter 2FA Code" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition" required>
+                            @error('code_session') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        </div>
+                    @else
+                        <div class="w-full sm:max-w-xs">
+                            <input type="password" name="password" placeholder="Enter account password" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition" required>
+                            @error('password_session') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
+                    <button type="submit" class="px-4 py-2 bg-rose-600 text-white text-sm font-medium rounded-xl hover:bg-rose-700 transition shrink-0">
+                        Log Out Other Devices
+                    </button>
+                </div>
+            </form>
+        @endif
     </div>
 
     <!-- Секция 2: Изменение пароля -->
