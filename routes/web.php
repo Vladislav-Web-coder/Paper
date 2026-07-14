@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/{tab?}', [SettingsController::class, 'show'])->name('show');
                 Route::post('/privacy/confirm', [SettingsController::class, 'confirmPassword'])->name('confirm_password');
                 Route::patch('/settings', [SettingsController::class, 'update'])->name('update');
+                Route::post('/change-email', \App\Http\Controllers\EmailChangeController::class)->name('email.change.request');
             });
         });
 

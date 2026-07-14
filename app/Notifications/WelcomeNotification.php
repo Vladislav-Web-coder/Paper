@@ -7,50 +7,29 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WelcomeNotification extends Notification
+class WelcomeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
+    public function via(mixed $notifiable): array
     {
-        //
+        return $notifiable->settings->notification_channels;
     }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
-    {
-        return ['mail', 'database'];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('Welcome to ' . config('app.name', 'Paper'))
-            ->action('Create your first note', route('dashboard'))
-            ->line('Thank you for creating an account. Start organizing your notes.');
+            ->subject('Welcome to ' . config('app.name', 'Paper') . '!')
+            ->greeting($notifiable->settings->greeting . ', ' . $notifiable->name . '!')
+            ->line('Thank you for registering. Paper is your minimal personal workspace designed to organize your thoughts and notes securely.')
+            ->action('Go to Dashboard', url('/dashboard'))
+            ->line('If you have any questions, feel free to reply to this email.');
     }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
+    public function toArray(mixed $notifiable): array
     {
         return [
-            'title' => 'Welcome to ' . config('app.name', 'Paper'),
-            'message' => 'Thank you for creating an account. Start organizing your notes.',
-            'action' => route('notes.index'),
+            'title' => 'Welcome aboard!',
+            'message' => 'Thank you for creating an account on ' . config('app.name', 'Paper') . '.',
+            'action_url' => route('dashboard'),
         ];
     }
 }
