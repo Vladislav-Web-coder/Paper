@@ -6,6 +6,7 @@ use App\Services\TwoFactorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 
 class LogoutOtherDevicesController extends Controller
 {
@@ -15,7 +16,7 @@ class LogoutOtherDevicesController extends Controller
     public function __invoke(Request $request)
     {
         $user = auth()->user();
-        $is2faEnabled = (bool) $user->settings->two_factor_enabled;
+        $is2faEnabled = (bool) ($user->settings->two_factor_enabled ?? false);
 
         if ($is2faEnabled) {
             $request->validate(['code' => 'required|string']);
@@ -30,7 +31,31 @@ class LogoutOtherDevicesController extends Controller
             }
         }
 
-        Auth::logoutOtherDevices($request->password ?? $request->code);
+        $currentSessionId = session()->getId();
+        $redis = Redis::connection(config('session.connection', 'default'));
+        $userSessionsKey = "user:sessions:{$user->id}";
+
+        $allSessionIds = $redis->smembers($userSessionsKey);
+
+        if (!empty($allSessionIds)) {
+            $sessionCookieName = config('session.cookie', 'laravel_session');
+
+            $otherSessionIds = array_filter($allSessionIds, function ($id) use ($currentSessionId) {
+                return $id !== $currentSessionId;
+            });
+
+            if (!empty($otherSessionIds)) {
+                $redisKeysToDelete = array_map(function ($id) use ($sessionCookieName) {
+                    return "{$sessionCookieName}:{$id}";
+                }, $otherSessionIds);
+
+                $redis->del($redisKeysToDelete);
+
+                $redis->srem($userSessionsKey, ...$otherSessionIds);
+            }
+        }
+
+        Auth::logoutOtherDevices($request->password ?? $request->user()->password);
 
         return back()->with('success', 'All other sessions have been logged out.');
     }

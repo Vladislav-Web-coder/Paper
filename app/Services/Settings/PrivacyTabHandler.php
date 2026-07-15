@@ -12,13 +12,19 @@ class PrivacyTabHandler implements SettingsTabHandler
 {
     public function handleShow(User $user): array
     {
-        $agent = new Agent();
         $currentSessionId = session()->getId();
-
         $redis = Redis::connection(config('session.connection', 'default'));
-        $keys = $redis->keys('*paper:*');
 
-        $sessions = collect($keys)->map(function ($key) use ($redis, $agent, $currentSessionId, $user) {
+        $keys = [];
+        $cursor = '0';
+        do {
+            $result = $redis->scan($cursor, ['match' => '*paper:*', 'count' => 100]);
+            $cursor = $result[0] ?? '0';
+            $fetchedKeys = $result[1] ?? [];
+            $keys = array_merge($keys, $fetchedKeys);
+        } while ($cursor !== '0' && count($keys) < 1000);
+
+        $sessions = collect($keys)->map(function ($key) use ($redis, $currentSessionId, $user) {
             $globalPrefix = config('database.redis.options.prefix', '');
             $redisKey = str_replace($globalPrefix, '', $key);
 
@@ -30,9 +36,9 @@ class PrivacyTabHandler implements SettingsTabHandler
             $sessionData = null;
 
             if (is_string($rawPayload)) {
-                $unserialized = @unserialize($rawPayload);
+                $unserialized = @unserialize($rawPayload, ['allowed_classes' => false]);
                 if ($unserialized === false) {
-                    $unserialized = @unserialize(@unserialize($rawPayload));
+                    $unserialized = @unserialize(@unserialize($rawPayload, ['allowed_classes' => false]), ['allowed_classes' => false]);
                 }
 
                 if (is_string($unserialized)) {
@@ -62,7 +68,11 @@ class PrivacyTabHandler implements SettingsTabHandler
             $sessionId = end($parts);
 
             $userAgentString = $sessionData['user_agent'] ?? '';
-            $agent->setUserAgent($userAgentString);
+
+            $agent = new Agent();
+            if ($userAgentString) {
+                $agent->setUserAgent($userAgentString);
+            }
 
             $browser = $userAgentString ? $agent->browser() : 'Unknown Browser';
             $platform = $userAgentString ? $agent->platform() : 'Unknown OS';

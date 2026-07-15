@@ -1,6 +1,5 @@
 <?php
 use App\Http\Controllers\Api\TelegramWebhookController;
-use App\Http\Controllers\LogoutOtherDevicesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\FolderController;
@@ -45,7 +44,7 @@ Route::middleware('auth')->group(function () {
                 Route::post('/privacy/confirm', [SettingsController::class, 'confirmPassword'])->name('confirm_password');
                 Route::patch('/settings', [SettingsController::class, 'update'])->name('update');
                 Route::post('/change-email', \App\Http\Controllers\EmailChangeController::class)->name('email.change.request');
-                Route::post('/sessions/logout', LogoutOtherDevicesController::class)->name('sessions.logout');
+                Route::post('/sessions/logout', \App\Http\Controllers\LogoutOtherDevicesController::class)->name('sessions.logout');
             });
         });
 
