@@ -42,7 +42,7 @@ class FolderObserver
 
     private function clearFoldersIndexCache(int $userId): void
     {
-        Cache::tags(["user:{$userId}:folders:index"])->flush();
+        Cache::tags(["user:{$userId}:folders"])->flush();
     }
     private function clearFoldersShowCache(int $userId, int $folderId): void
     {

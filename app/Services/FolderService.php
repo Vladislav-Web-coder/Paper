@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class FolderService
 {
-    public function createFolder(array $data): Folder
+    public function createFolder($data): Folder
     {
         $user = auth()->user();
         return DB::transaction(function () use ($data, $user) {
@@ -21,14 +21,13 @@ class FolderService
             ]);
         });
     }
-    public function updateFolder(array $data, $id): Folder
+    public function updateFolder(array $data, Folder $folder): Folder
     {
-        return DB::transaction(function () use ($data, $id) {
+        return DB::transaction(function () use ($data, $folder) {
             $user = auth()->user();
-            $folder = $user->folders()->findOrFail($id);
             $folderFields = collect($data)
-                ->only(['name', 'content'])
-                ->filter(fn($item) => $item !== '' && $item !== null)
+                ->only(['name', 'description'])
+                ->filter(fn($item) => $item !== null)
                 ->toArray();
             if(!empty($folderFields)) {
                 $folder->update($folderFields);
@@ -36,19 +35,25 @@ class FolderService
 
             return $folder;
         });
-
     }
     public function ensureFolderExists(array $folders, $user): array
     {
-        $folders = array_unique($folders);
+        $folders = array_unique(array_filter($folders));
 
-        $existingFolders = $user->folders()
+        if (empty($folders)) {
+            return [];
+        }
+
+        $existingFolderNames = $user->folders()
             ->whereIn('name', $folders)
             ->pluck('name')
             ->toArray();
-        if(!empty($existingFolders)) {
-            $insertData = collect($folders)->map(fn ($existingFolder) => [
-                'name' => $existingFolder,
+
+        $newFolderNames = array_diff($folders, $existingFolderNames);
+
+        if (!empty($newFolderNames)) {
+            $insertData = collect($newFolderNames)->map(fn ($name) => [
+                'name' => $name,
                 'user_id' => $user->id,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -56,6 +61,10 @@ class FolderService
 
             $user->folders()->insert($insertData);
         }
-        return $user->folders()->whereIn('name', $folders)->pluck('id')->toArray();
+
+        return $user->folders()
+            ->whereIn('name', $folders)
+            ->pluck('id')
+            ->toArray();
     }
 }

@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('verified')->group(function () {
             Route::patch('/notes/{note}/pin', [NoteController::class, 'pin'])->name('notes.pin');
             Route::resource('notes', NoteController::class);
-            Route::resource('folders', FolderController::class)->except(['create', 'edit']);
+            Route::resource('folders', FolderController::class);
 
             Route::middleware(['web','auth'])->get('/telegram/connect', [TelegramWebhookController::class, 'connect'])->name('telegram.connect');
 

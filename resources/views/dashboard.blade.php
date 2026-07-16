@@ -54,18 +54,13 @@
         </div>
     </div>
 
-    <!-- Основная сетка -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- Левая колонка (Заметки) -->
         <div class="lg:col-span-2 space-y-6">
-
-            <!-- Блок ЗАКРЕПЛЕННЫХ заметок (Показывается всегда, когда нет активного поиска) -->
             @if(!request('search'))
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <!-- Иконка канцелярской кнопки в стиле вашего UI -->
                             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11.963 14.804A4.001 4.001 0 007.75 19.137M12 14.502c.333.115.682.176 1.037.176.772 0 1.503-.277 2.074-.775m-3.111.6c.015.424.161.83.421 1.157m3.111-2.157c.307-.406.49-.912.49-1.46c0-1.218-.895-2.22-2.073-2.41m2.073 2.41c-.247.327-.58.583-.963.738m0 0A4.002 4.002 0 0112 7.502M15.5 14c.732 0 1.403-.26 1.926-.69M15.5 14V7.5M12 7.5c0-.663.537-1.2 1.2-1.2.536 0 .984.35 1.137.83M12 7.5v6.5m3.5-6.5C15.5 6.67 14.83 6 14 6" />
                             </svg>
@@ -88,7 +83,6 @@
                 </div>
             @endif
 
-            <!-- Блок ПОСЛЕДНИХ или НАЙДЕННЫХ заметок -->
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-bold text-gray-900">
@@ -111,7 +105,6 @@
             </div>
         </div>
 
-        <!-- Правая колонка (Папки) -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-bold text-gray-900">Recent folders</h2>

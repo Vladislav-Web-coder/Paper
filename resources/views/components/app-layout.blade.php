@@ -29,17 +29,7 @@
         <!-- Профиль и переход в настройки -->
         <div class="flex items-center gap-4">
             @auth
-                <a href="{{ route('notifications.index') }}" class="p-2 text-gray-400 hover:text-indigo-600 bg-gray-50 border border-gray-100 rounded-xl hover:border-indigo-100 transition relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    @if(auth()->user()->unreadNotifications->isNotEmpty())
-                        <span class="absolute top-1 right-1 flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
-                </span>
-                    @endif
-                </a>
+                <x-notification-indicator />
 
                 <a href="{{ route('settings.show') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200 transition text-gray-600 hover:text-indigo-600 group shadow-sm/50">
                         <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition">

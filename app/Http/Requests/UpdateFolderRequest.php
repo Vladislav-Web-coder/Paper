@@ -17,7 +17,6 @@ class UpdateFolderRequest extends FormRequest
         $folder = $this->route('folder');
         return $this->user()->can('update', $folder);
     }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -34,8 +33,8 @@ class UpdateFolderRequest extends FormRequest
             ],
             'description' => [
                 'sometimes',
-                'required',
                 'string',
+                'nullable',
                 'max:255',
             ]
         ];

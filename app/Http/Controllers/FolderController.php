@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 
 class FolderController extends Controller
 {
-    public function __construct(FolderService $folderService)
+    public function __construct(public FolderService $folderService)
     {}
 
     public function index(Request $request)
@@ -26,19 +26,21 @@ class FolderController extends Controller
         $page = $request->query('page', 1);
         $perPage = 12;
 
-        // Cache only folder Ids for current page
-        $cachedData = Cache::tags("user:{$user->id}:folders:index")->remember("page:{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
-            $paginator = $user->folders()
-                ->select(['folders.id', 'folders.name', 'folders.description', 'folders.created_at'])
-                ->latest()
-                ->paginate($perPage);
-            return [
-                'items' => $paginator->getCollection()->toArray(),
-                'total' => $paginator->total(),
-            ];
-        });
+        $cachedData = Cache::tags(["user:{$user->id}:folders"])
+            ->remember("page:{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
+                $paginator = $user->folders()->latest()->paginate($perPage);
 
-        $foldersCollection = Folder::hydrate($cachedData['items']);
+                return [
+                    'ids'   => $paginator->pluck('id')->toArray(),
+                    'total' => $paginator->total(),
+                ];
+            });
+
+        $foldersCollection = empty($cachedData['ids'])
+            ? collect()
+            : Folder::whereIn('id', $cachedData['ids'])
+                ->latest()
+                ->get();
 
         $folders = new LengthAwarePaginator(
             $foldersCollection,
@@ -47,9 +49,17 @@ class FolderController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
+
         return view('folders.index', ['folders' => $folders]);
     }
 
+
+    public function create()
+    {
+        Gate::authorize('create', Folder::class);
+
+        return view('folders.create');
+    }
     public function store(CreateFolderRequest $request)
     {
         $data = $request->validated();
@@ -102,10 +112,16 @@ class FolderController extends Controller
             'folder' => $folder
         ]);
     }
-    public function update(UpdateFolderRequest $request, $id)
+    public function edit(Folder $folder)
+    {
+        Gate::authorize('update', $folder);
+        return view('folders.edit', ['folder' => $folder]);
+
+    }
+    public function update(UpdateFolderRequest $request, Folder $folder)
     {
         $data = $request->validated();
-        $folder = $this->folderService->updateFolder($data, $id);
+        $folder = $this->folderService->updateFolder($data, $folder);
 
         return redirect()
             ->route('folders.show', $folder)

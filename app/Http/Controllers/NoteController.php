@@ -8,6 +8,7 @@ use App\Models\Tag;
 use App\Services\NoteService;
 use App\Models\Note;
 use App\Models\Folder;
+use App\Services\SearchService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,41 +21,37 @@ class NoteController extends Controller
 {
     public function __construct(public NoteService $noteService) {}
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request): View
+    public function index(Request $request, SearchService $searchService): View
     {
         Gate::authorize('viewAny', Note::class);
         $user = $request->user();
+        $search = $request->input('search');
+
+        if ($search) {
+            $notes = $searchService->searchNotesForUser($user, $search, limit: 50);
+
+            return view('notes.index', ['notes' => $notes]);
+        }
+
         $page = $request->query('page', 1);
         $perPage = 12;
 
-        // Cache only note Ids for current page
-        $cachedData = Cache::tags(["user:{$user->id}:notes"])->remember("page:{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
-            $paginator = $user->notes()
-                ->select(['notes.id', 'notes.name', 'notes.content', 'notes.created_at'])
-                ->with(['tags:id,name', 'folders:id,name'])
+        $cachedData = Cache::tags(["user:{$user->id}:notes"])
+            ->remember("page:{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
+                $paginator = $user->notes()->latest()->paginate($perPage);
+
+                return [
+                    'ids'   => $paginator->pluck('id')->toArray(),
+                    'total' => $paginator->total(),
+                ];
+            });
+
+        $notesCollection = empty($cachedData['ids'])
+            ? collect()
+            : Note::with(['tags:id,name', 'folders:id,name'])
+                ->whereIn('id', $cachedData['ids'])
                 ->latest()
-                ->paginate($perPage);
-            return [
-                'items' => $paginator->getCollection()->toArray(),
-                'total' => $paginator->total(),
-            ];
-        });
-
-        $notesCollection = Note::hydrate($cachedData['items']);
-
-        $notesCollection->each(function ($note) {
-            $rawTags = $note->getAttribute('tags') ?? [];
-            $rawFolders = $note->getAttribute('folders') ?? [];
-
-            $note->setRelations([
-                'tags' => Tag::hydrate($rawTags),
-                'folders' => Folder::hydrate($rawFolders),
-            ]);
-            unset($note->folders, $note->tags);
-        });
+                ->get();
 
         $notes = new LengthAwarePaginator(
             $notesCollection,
@@ -63,8 +60,12 @@ class NoteController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
-        return view ('notes.index', ['notes' => $notes]);
+
+        return view('notes.index', ['notes' => $notes]);
     }
+
+
+
 
     /**
      * Show the form for creating a new resource.

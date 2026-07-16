@@ -36,7 +36,7 @@
                     element: element,
                     autoDownloadFontAwesome: true,
                     spellChecker: false,
-                    placeholder: 'Type your note here (Markdown supported)...',
+                    placeholder: 'Type here (Markdown supported)...',
                     status: false,
                     forceSync: true,
                     toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "preview", "side-by-side", "fullscreen"]

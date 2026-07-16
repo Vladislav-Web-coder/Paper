@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Note;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class NoteService
 {
@@ -52,9 +53,9 @@ class NoteService
                 $note->update($noteFields);
 
             }
-            if(array_key_exists('folder_name', $data)) {
-                $folder_ids = !empty($data['folder_name'])
-                    ? $this->folderService->ensureFolderExists($data['folder_name'], $user)
+            if(array_key_exists('folders', $data)) {
+                $folder_ids = !empty($data['folders'])
+                    ? $this->folderService->ensureFolderExists($data['folders'], $user)
                     : [];
 
                 $currentFolderIds = $note->folders()->pluck('id')->toArray();
@@ -98,9 +99,9 @@ class NoteService
 
     public function clearFolderCacheByFolderId(int $userId, int $folderId): void
     {
-        $redis = redis();
+        $redis = Redis::connection();
         $prefix = config('database.redis.options.prefix', '');
-        $mask = $prefix . 'user:{$userId}:folder:{$folderId}:page:*';
+        $mask = "{$prefix}user:{$userId}:folder:{$folderId}:page:*";
 
         $key = $redis->keys($mask);
 

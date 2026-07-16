@@ -4,7 +4,6 @@
     <!-- Шапка страницы и действия -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-            <!-- Хлебные крошки / Возврат назад -->
             <a href="{{ route('folders.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 mb-2">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -27,7 +26,7 @@
         </div>
 
         <div class="flex items-center gap-3 w-full md:w-auto self-end md:self-center">
-            <a href="{{ route('notes.create', ['folder_id' => $folder->id]) }}" class="whitespace-nowrap bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
+            <a href="{{ route('notes.create', ['folderId' => $folder->id]) }}" class="whitespace-nowrap bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
                 + Create note here
             </a>
         </div>

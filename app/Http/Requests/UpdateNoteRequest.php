@@ -23,6 +23,14 @@ class UpdateNoteRequest extends FormRequest
 
         return $this->user()->can('update', $note);
     }
+    protected function prepareForValidation(): void
+    {
+        if(!$this->input('folders')) {
+            $this->merge([
+                'folders' => [],
+            ]);
+        }
+    }
     /**
      * Get the validation rules that apply to the request.
      *
@@ -33,8 +41,8 @@ class UpdateNoteRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'content' => 'sometimes|required|string|max:2295',
-            'folder_name' => 'sometimes|nullable|array',
-            'folder_name.*' => 'string|max:50',
+            'folders' => 'sometimes|nullable|array',
+            'folders.*' => 'string|max:50',
             'tags_name' => 'sometimes|nullable|array',
             'tags_name.*' => 'string|max:50',
         ];
