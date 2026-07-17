@@ -41,7 +41,7 @@ class UpdateNoteRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'content' => 'sometimes|required|string|max:2295',
-            'folders' => 'sometimes|nullable|array',
+            'folder_name' => 'sometimes|nullable|array',
             'folders.*' => 'string|max:50',
             'tags_name' => 'sometimes|nullable|array',
             'tags_name.*' => 'string|max:50',

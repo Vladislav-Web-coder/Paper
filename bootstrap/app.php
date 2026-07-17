@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetAppLocale::class,
             \Illuminate\Session\Middleware\AuthenticateSession::class,
             \App\Http\Middleware\TrackSessionAttributes::class,
+            \App\Http\Middleware\SetUserTimeZone::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

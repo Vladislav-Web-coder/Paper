@@ -53,9 +53,9 @@ class NoteService
                 $note->update($noteFields);
 
             }
-            if(array_key_exists('folders', $data)) {
-                $folder_ids = !empty($data['folders'])
-                    ? $this->folderService->ensureFolderExists($data['folders'], $user)
+            if(array_key_exists('folder_name', $data)) {
+                $folder_ids = !empty($data['folder_name'])
+                    ? $this->folderService->ensureFolderExists($data['folder_name'], $user)
                     : [];
 
                 $currentFolderIds = $note->folders()->pluck('id')->toArray();
@@ -76,25 +76,21 @@ class NoteService
             return $note;
         });
     }
-    private function ensureTagsExist(array $tags, $user): array {
-        $tags = array_unique($tags);
-        $existingTags = $user->tags()
-            ->whereIn('name', $tags)
-            ->pluck('name')
-            ->toArray();
-        $missingNames = array_diff($tags, $existingTags);
-        if(!empty($missingNames)) {
-            $insertData = collect($missingNames)->map(fn($name) => [
-                'name' => $name,
-                'user_id' => $user->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ])->toArray();
+    protected function ensureTagsExist(array $tags, $user): array {
+        $tags = array_unique(array_filter($tags));
+        $tagsIds = [];
 
-            $user->tags()->insert($insertData);
+        foreach ($tags as $tag) {
+            $name = trim($tag);
+            if(empty($name)) continue;
 
+            $tag = $user->tags()->firstOrCreate([
+                    'name' => $name
+            ]);
+
+            $tagsIds[] = $tag->id;
         }
-        return $user->tags()->whereIn('name', $tags)->pluck('id')->toArray();
+        return $tagsIds;
     }
 
     public function clearFolderCacheByFolderId(int $userId, int $folderId): void

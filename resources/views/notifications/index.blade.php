@@ -1,18 +1,18 @@
 <x-layout>
-    <x-slot name="title">Notifications</x-slot>
+    <x-slot name="title">{{ __('Notifications') }}</x-slot>
 
     <!-- Шапка страницы -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Notifications</h1>
-            <p class="text-sm text-gray-500 mt-1">Stay updated with your shared folders, notes and account security status.</p>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ __('Notifications') }}</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ __('Stay updated with your shared folders, notes and account security status.') }}</p>
         </div>
 
         @if(auth()->user()->unreadNotifications->isNotEmpty())
             <form action="{{ route('notifications.markAsReadAll') }}" method="POST" class="w-full sm:w-auto">
                 @csrf
                 <button type="submit" class="w-full text-center whitespace-nowrap bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
-                    Mark all as read
+                    {{ __('Mark all as read') }}
                 </button>
             </form>
         @endif
@@ -20,8 +20,8 @@
             <form action="{{ route('notifications.clearAll') }}" method="POST" class="w-full sm:w-auto">
                 @csrf
                 @method('DELETE')
-                <button type="submit" onclick="return confirm('Are you sure you want to delete all notifications?')" class="w-full text-center whitespace-nowrap bg-rose-50 border border-rose-100 text-rose-700 hover:bg-rose-100 px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
-                    Clear all
+                <button type="submit" onclick="return confirm('{{ __('Are you sure you want to delete all notifications?') }}')" class="w-full text-center whitespace-nowrap bg-rose-50 border border-rose-100 text-rose-700 hover:bg-rose-100 px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
+                    {{ __('Clear all') }}
                 </button>
             </form>
         @endif
@@ -37,8 +37,8 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-700 mb-0.5">Good job! You're all caught up</p>
-                    <p class="text-xs text-gray-400">When you get new alerts, they will show up here.</p>
+                    <p class="font-semibold text-gray-700 mb-0.5">{{ __("Good job! You're all caught up") }}</p>
+                    <p class="text-xs text-gray-400">{{ __('When you get new alerts, they will show up here.') }}</p>
                 </div>
             </div>
         @else
@@ -49,7 +49,7 @@
 
                         <!-- Индикатор непрочитанного (Синяя точка) -->
                         @if($notification->unread())
-                            <span class="absolute left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 bg-indigo-600 rounded-full" title="Unread"></span>
+                            <span class="absolute left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 bg-indigo-600 rounded-full" title="{{ __('Unread') }}"></span>
                         @endif
 
                         <!-- Иконка уведомления на основе его типа -->
@@ -63,20 +63,20 @@
                         <div class="flex-grow min-w-0 pr-12">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-bold text-gray-900 truncate">
-                                    {{ $notification->data['title'] ?? 'Notification' }}
+                                    {{ __($notification->data['title'] ?? 'Notification') }}
                                 </span>
                                 <span class="text-xs text-gray-400 whitespace-nowrap">
                                     {{ $notification->created_at->diffForHumans() }}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600 mt-0.5 leading-relaxed">
-                                {{ $notification->data['message'] ?? '' }}
+                                {{ __($notification->data['message'] ?? '') }}
                             </p>
 
                             <!-- Кнопка перехода (Действие) -->
                             @if(isset($notification->data['action_url']))
                                 <a href="{{ $notification->data['action_url'] }}" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 mt-2 transition">
-                                    View changes
+                                    {{ __('View changes') }}
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                                     </svg>
@@ -89,7 +89,7 @@
                             <div class="absolute right-4 top-4 md:opacity-0 group-hover:opacity-100 transition duration-150">
                                 <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" title="Mark as read" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 rounded-lg shadow-sm transition">
+                                    <button type="submit" title="{{ __('Mark as read') }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 rounded-lg shadow-sm transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                         </svg>
@@ -101,7 +101,7 @@
                         <form action="{{ route('notifications.destroy', $notification->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" title="Delete notification" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-rose-600 hover:border-rose-200 rounded-lg shadow-sm transition">
+                            <button type="submit" title="{{ __('Delete notification') }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-rose-600 hover:border-rose-200 rounded-lg shadow-sm transition">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>

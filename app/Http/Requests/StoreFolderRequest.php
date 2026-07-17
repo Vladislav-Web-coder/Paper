@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
-class CreateFolderRequest extends FormRequest
+class StoreFolderRequest extends FormRequest
 {
     use NormalizeRequestName;
     /**

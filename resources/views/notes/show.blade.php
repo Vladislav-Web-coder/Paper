@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot name="title">{{ $note->name }} — My Notes</x-slot>
+    <x-slot name="title">{{ $note->name }} — {{ __('My Notes') }}</x-slot>
 
     <div class="space-y-6 max-w-4xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
@@ -7,19 +7,19 @@
                 <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Back to notes
+                {{ __('Back to notes') }}
             </a>
 
             <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
                 <a href="{{ route('notes.edit', $note) }}" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">
-                    Edit note
+                    {{ __('Edit note') }}
                 </a>
 
-                <form action="{{ route('notes.destroy', $note) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this note?');">
+                <form action="{{ route('notes.destroy', $note) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this note?') }}');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="bg-rose-50 border border-rose-200 text-rose-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-rose-100/70 transition shadow-sm">
-                        Delete
+                        {{ __('Delete') }}
                     </button>
                 </form>
             </div>
@@ -35,7 +35,7 @@
                             </span>
                         @endforeach
                     @else
-                        <span class="text-xs text-gray-400 italic">No folder</span>
+                        <span class="text-xs text-gray-400 italic">{{ __('No folder') }}</span>
                     @endif
 
                     <span class="text-gray-300 hidden sm:inline">•</span>
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="text-xs text-gray-400 font-medium" title="{{ $note->created_at->format('d.m.Y H:i') }}">
-                    Created {{ $note->created_at->diffForHumans() }}
+                    {{ __('Created :time', ['time' => $note->created_at->diffForHumans()]) }}
                 </div>
             </div>
 
@@ -62,8 +62,8 @@
                 </h1>
             </div>
 
-            <div class="text-base text-gray-700 leading-relaxed whitespace-pre-wrap pt-2">
-                {{ $note->content }}
+            <div class="prose prose-indigo max-w-none text-gray-800 leading-relaxed">
+                {!! Str::markdown(e($note->content)) !!}
             </div>
         </div>
     </div>

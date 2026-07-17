@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateFolderRequest;
+use App\Http\Requests\StoreFolderRequest;
 use App\Http\Requests\UpdateFolderRequest;
 use App\Models\Folder;
 use App\Models\Note;
@@ -60,7 +60,7 @@ class FolderController extends Controller
 
         return view('folders.create');
     }
-    public function store(CreateFolderRequest $request)
+    public function store(StoreFolderRequest $request)
     {
         $data = $request->validated();
 
@@ -68,36 +68,30 @@ class FolderController extends Controller
         return redirect()
             ->route('folders.show', $folder);
     }
-
     public function show(Request $request, Folder $folder)
     {
+        Gate::authorize('view', $folder);
+
         $user = $request->user();
         $page = $request->query('page', 1);
         $perPage = 12;
 
-        Gate::authorize('view', $folder);
+        $cachedData = Cache::tags(["user:{$user->id}:notes"])
+            ->remember("user_{$user->id}_folder_{$folder->id}_page_{$page}", now()->addMinutes(30), function () use ($folder, $perPage) {
+                $paginator = $folder->notes()->latest()->paginate($perPage);
 
-        $cachedData = Cache::tags(["user:{$user->id}:folder:{$folder->id}"])->remember("page:{$page}", now()->addMinutes(30), function () use ($folder, $perPage) {
-            $paginator = $folder->notes()
-                ->select(['notes.id', 'notes.name', 'notes.content','notes.created_at'])
-                ->with('tags:id,name')
+                return [
+                    'ids'   => $paginator->pluck('id')->toArray(),
+                    'total' => $paginator->total(),
+                ];
+            });
+
+        $notesCollection = empty($cachedData['ids'])
+            ? collect()
+            : Note::with(['tags:id,name', 'folders:id,name'])
+                ->whereIn('id', $cachedData['ids'])
                 ->latest()
-                ->paginate($perPage);
-            return [
-                'items' => $paginator->getCollection()->toArray(),
-                'total' => $paginator->total(),
-            ];
-        });
-
-        $notesCollection = Note::hydrate($cachedData['items']);
-        $notesCollection->each(function($note) {
-            $rawTags = $note->getAttribute('tags');
-
-            $note->setRelations([
-                'tags' => Tag::hydrate($rawTags) ?? [],
-            ]);
-            unset($note->folders, $note->tags);
-        });
+                ->get();
 
         $notes = new LengthAwarePaginator(
             $notesCollection,
@@ -108,10 +102,11 @@ class FolderController extends Controller
         );
 
         return view('folders.show', [
-            'notes' => $notes,
+            'notes'  => $notes,
             'folder' => $folder
         ]);
     }
+
     public function edit(Folder $folder)
     {
         Gate::authorize('update', $folder);

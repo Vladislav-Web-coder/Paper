@@ -19,7 +19,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('Welcome to ' . config('app.name', 'Paper') . '!')
-            ->greeting($notifiable->settings->greeting . ', ' . $notifiable->name . '!')
+            ->greeting('Welcome, ' . $notifiable->name . '!')
             ->line('Thank you for registering. Paper is your minimal personal workspace designed to organize your thoughts and notes securely.')
             ->action('Go to Dashboard', url('/dashboard'))
             ->line('If you have any questions, feel free to reply to this email.');

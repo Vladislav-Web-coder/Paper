@@ -13,16 +13,27 @@ class PrivacyTabHandler implements SettingsTabHandler
     public function handleShow(User $user): array
     {
         $currentSessionId = session()->getId();
-        $redis = Redis::connection(config('session.connection', 'default'));
+
+        $redis = Redis::connection(config('session.connection', 'session'));
+
+        $sessionDatabaseNum = config('database.redis.session.database', 2);
+        $redis->select($sessionDatabaseNum);
 
         $keys = [];
         $cursor = '0';
         do {
-            $result = $redis->scan($cursor, ['match' => '*paper:*', 'count' => 100]);
+            $result = $redis->scan($cursor, [
+                'match' => '*',
+                'count' => 100
+            ]);
+
             $cursor = $result[0] ?? '0';
             $fetchedKeys = $result[1] ?? [];
             $keys = array_merge($keys, $fetchedKeys);
-        } while ($cursor !== '0' && count($keys) < 1000);
+
+        } while ($cursor !== '0' && count($keys) < 5000);
+
+        $keys = array_unique($keys);
 
         $sessions = collect($keys)->map(function ($key) use ($redis, $currentSessionId, $user) {
             $globalPrefix = config('database.redis.options.prefix', '');
@@ -36,19 +47,19 @@ class PrivacyTabHandler implements SettingsTabHandler
             $sessionData = null;
 
             if (is_string($rawPayload)) {
-                $unserialized = @unserialize($rawPayload, ['allowed_classes' => false]);
-                if ($unserialized === false) {
-                    $unserialized = @unserialize(@unserialize($rawPayload, ['allowed_classes' => false]), ['allowed_classes' => false]);
-                }
-
-                if (is_string($unserialized)) {
-                    $sessionData = json_decode($unserialized, true);
-                } elseif (is_array($unserialized)) {
-                    $sessionData = $unserialized;
+                if (preg_match('/^s:\d+:"(.*)";$/s', $rawPayload, $matches)) {
+                    $jsonString = stripslashes($matches[1]);
+                    $sessionData = json_decode($jsonString, true);
+                } else {
+                    $unserialized = @unserialize($rawPayload, ['allowed_classes' => false]);
+                    if ($unserialized === false) {
+                        $unserialized = $rawPayload;
+                    }
+                    $sessionData = is_string($unserialized) ? json_decode($unserialized, true) : $unserialized;
                 }
             }
 
-            if (!is_array($sessionData)) {
+            if (!is_array($sessionData) || !isset($sessionData['ip_address'])) {
                 return null;
             }
 
@@ -68,21 +79,22 @@ class PrivacyTabHandler implements SettingsTabHandler
             $sessionId = end($parts);
 
             $userAgentString = $sessionData['user_agent'] ?? '';
-
             $agent = new Agent();
             if ($userAgentString) {
                 $agent->setUserAgent($userAgentString);
             }
 
-            $browser = $userAgentString ? $agent->browser() : 'Unknown Browser';
-            $platform = $userAgentString ? $agent->platform() : 'Unknown OS';
+            $platform = $agent->platform();
+            if (str_contains($userAgentString, 'Macintosh')) {
+                $platform = 'Macintosh';
+            }
 
             return [
                 'id' => $sessionId,
                 'ip_address' => $sessionData['ip_address'] ?? 'Unknown IP',
                 'is_current_device' => $sessionId === $currentSessionId,
-                'browser' => $browser,
-                'platform' => $platform,
+                'browser' => $agent->browser() ?: 'Unknown Browser',
+                'platform' => $platform ?: 'Unknown OS',
                 'last_active' => isset($sessionData['last_activity'])
                     ? Carbon::createFromTimestamp($sessionData['last_activity'])->diffForHumans()
                     : 'Just now',
@@ -96,6 +108,7 @@ class PrivacyTabHandler implements SettingsTabHandler
 
         return ['sessions' => $sessions];
     }
+
 
     public function handleUpdate(User $user, array $data): void
     {

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot name="title">Folder: {{ $folder->name }}</x-slot>
+    <x-slot name="title">{{ __('Folder') }}: {{ $folder->name }}</x-slot>
 
     <!-- Шапка страницы и действия -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
@@ -8,7 +8,7 @@
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
-                Back to folders
+                {{ __('Back to folders') }}
             </a>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
                 <span class="text-gray-400">
@@ -19,15 +19,15 @@
                 {{ $folder->name }}
             </h1>
             @if($folder->description)
-                <p class="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
-                    {{ $folder->description }}
-                </p>
+                <div class="prose prose-indigo max-w-none text-gray-800 leading-relaxed">
+                    {!! Str::markdown(e($folder->description)) !!}
+                </div>
             @endif
         </div>
 
         <div class="flex items-center gap-3 w-full md:w-auto self-end md:self-center">
             <a href="{{ route('notes.create', ['folderId' => $folder->id]) }}" class="whitespace-nowrap bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm">
-                + Create note here
+                {{ __('+ Create note here') }}
             </a>
         </div>
     </div>
@@ -36,14 +36,14 @@
     <div class="space-y-6">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-gray-900">
-                Notes in this folder
+                {{ __('Notes in this folder') }}
                 <span class="text-sm font-normal text-gray-400 ml-1">({{ $notes->total() }})</span>
             </h2>
         </div>
 
         @if($notes->isEmpty())
             <div class="p-8 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl text-gray-500 text-sm">
-                This folder is empty. No notes found.
+                {{ __('This folder is empty. No notes found.') }}
             </div>
         @else
             <!-- Сетка заметок -->
@@ -58,10 +58,10 @@
                         <button
                             type="button"
                             class="js-btn-preview absolute top-4 right-4 p-2 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-indigo-600 hover:border-indigo-200 shadow-sm transition opacity-0 group-hover:opacity-100 z-10"
-                            data-title="{{ $note->name }}"
+                            data-title="{{ $note->name ?? __('Untitled Note') }}"
                             data-date="{{ $note->created_at->format('d.m.Y H:i') }}"
                             data-content="{{ $note->content }}"
-                            title="Quick Preview"
+                            title="{{ __('Quick Preview') }}"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -91,8 +91,8 @@
                 <div class="bg-white px-6 pt-6 pb-5">
                     <div class="flex justify-between items-start mb-4 gap-4">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 tracking-tight" id="modalTitle">Note Title</h3>
-                            <p class="text-xs text-gray-400 mt-1" id="modalDate">Date</p>
+                            <h3 class="text-xl font-bold text-gray-900 tracking-tight" id="modalTitle">{{ __('Note Title') }}</h3>
+                            <p class="text-xs text-gray-400 mt-1" id="modalDate">{{ __('Date') }}</p>
                         </div>
                         <button type="button" onclick="closePreview()" class="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition shrink-0">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -102,19 +102,18 @@
                     </div>
                     <!-- Тело заметки -->
                     <div class="text-sm text-gray-600 border-t border-gray-100 pt-4 max-h-[50vh] overflow-y-auto whitespace-pre-wrap leading-relaxed" id="modalContent">
-                        Note content...
+                        {{ __('Note content...') }}
                     </div>
                 </div>
                 <div class="bg-gray-50 px-6 py-4 flex justify-end rounded-b-2xl border-t border-gray-100">
                     <button type="button" onclick="closePreview()" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition shadow-sm">
-                        Close
+                        {{ __('Close') }}
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Скрипт управления модальным окном -->
+<!-- Скрипт управления модальным окном -->
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {

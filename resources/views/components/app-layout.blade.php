@@ -26,7 +26,7 @@
             </a>
         </div>
 
-        <!-- Профиль и переход в настройки -->
+        <!-- Профиль, переключатель языка и настройки -->
         <div class="flex items-center gap-4">
             @auth
                 <x-notification-indicator />
@@ -52,17 +52,16 @@
             <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {{ session('success') }}
+            {{ __(session('success')) }}
         </div>
     @endif
 
-    <!-- Исправлено: Добавлен пропущенный закрывающий тег </div> -->
     @if(session('error'))
         <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm font-medium flex items-center gap-2 shadow-sm">
             <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {{ session('error') }}
+            {{ __(session('error')) }}
         </div>
     @endif
 
@@ -76,15 +75,15 @@
 
             <!-- Колонка 1: О нас -->
             <div class="space-y-3 md:col-span-2">
-                <span class="text-base font-bold text-gray-900 tracking-tight block">About Us</span>
+                <span class="text-base font-bold text-gray-900 tracking-tight block">{{ __('About Us') }}</span>
                 <p class="text-sm text-gray-500 max-w-sm leading-relaxed">
-                    {{ config('app.name', 'Paper') }} is a minimal, blazing-fast personal workspace designed to organize your thoughts, sync encrypted notes, and structure folders seamlessly.
+                    {{ config('app.name', 'Paper') }} {{ __('is a minimal, blazing-fast personal workspace designed to organize your thoughts, sync encrypted notes, and structure folders seamlessly.') }}
                 </p>
             </div>
 
             <!-- Колонка 2: Соцсети -->
             <div class="space-y-3">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">Social Networks</span>
+                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">{{ __('Social Networks') }}</span>
                 <ul class="space-y-2 text-sm font-medium">
                     <li>
                         <a href="https://github.com" target="_blank" rel="noopener" class="text-gray-600 hover:text-indigo-600 transition flex items-center gap-1.5">
@@ -106,32 +105,30 @@
 
             <!-- Колонка 3: Поддержка -->
             <div class="space-y-3">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">Support</span>
+                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">{{ __('Support') }}</span>
                 <ul class="space-y-2 text-sm font-medium">
                     <li>
                         <a href="mailto:support@example.com" class="text-gray-600 hover:text-indigo-600 transition flex items-center gap-1.5">
-                            Help Center
+                            {{ __('Help Center') }}
                         </a>
                     </li>
                     <li>
                         <a href="#" class="text-gray-600 hover:text-indigo-600 transition flex items-center gap-1.5">
-                            Privacy Policy
+                            {{ __('Privacy Policy') }}
                         </a>
                     </li>
                     <li>
                         <a href="#" class="text-gray-600 hover:text-indigo-600 transition flex items-center gap-1.5">
-                            Terms of Service
+                            {{ __('Terms of Service') }}
                         </a>
                     </li>
                 </ul>
             </div>
-
         </div>
-
         <!-- Копирайт подвал -->
         <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p class="text-xs text-gray-400">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Paper') }}. All rights reserved.
+                &copy; {{ date('Y') }} {{ config('app.name', 'Paper') }}. {{ __('All rights reserved.') }}
             </p>
         </div>
     </div>

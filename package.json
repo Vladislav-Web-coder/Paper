@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "easymde": "^2.21.0",
-        "easymode": "^1.0.0"
+        "easymode": "^1.0.0",
+        "marked": "^18.0.6"
     }
 }

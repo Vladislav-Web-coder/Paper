@@ -9,7 +9,6 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class SendWelcomeNotification
 {
-    public $afterCommit = true;
     /**
      * Create the event listener.
      */

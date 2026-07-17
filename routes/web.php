@@ -8,10 +8,9 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Middleware\CheckTwoFactor;
+use App\Http\Controllers\TagsController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', \App\Http\Controllers\LandingController::class)->name('landing');
 
 Route::middleware('auth')->group(function () {
     Route::middleware([CheckTwoFactor::class])->group(function () {
@@ -36,6 +35,10 @@ Route::middleware('auth')->group(function () {
             Route::patch('/notes/{note}/pin', [NoteController::class, 'pin'])->name('notes.pin');
             Route::resource('notes', NoteController::class);
             Route::resource('folders', FolderController::class);
+
+            Route::get('/tags', [TagsController::class, 'index'])->name('tags.index');
+            Route::get('/tags/{tag}', [TagsController::class, 'show'])->name('tags.show');
+            Route::delete('/tags/{tag}', [TagsController::class, 'destroy'])->name('tags.destroy');
 
             Route::middleware(['web','auth'])->get('/telegram/connect', [TelegramWebhookController::class, 'connect'])->name('telegram.connect');
 

@@ -1,10 +1,10 @@
 <x-layout>
-    <x-slot name="title">My Folders</x-slot>
+    <x-slot name="title">{{ __('My Folders') }}</x-slot>
 
     <!-- Шапка страницы и действия -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">My folders</h1>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ __('My folders') }}</h1>
         </div>
     </div>
 
@@ -12,14 +12,14 @@
     <div class="space-y-6">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-gray-900">
-                All folders
+                {{ __('All folders') }}
                 <span class="text-sm font-normal text-gray-400 ml-1">({{ $folders->total() }})</span>
             </h2>
         </div>
 
         @if($folders->isEmpty())
             <div class="p-8 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl text-gray-500 text-sm">
-                Folders not found.
+                {{ __('Folders not found.') }}
             </div>
         @else
             <!-- Сетка папок -->
@@ -48,19 +48,19 @@
 
                         <!-- Описание папки -->
                         @if($folder->description)
-                            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">
-                                {{ $folder->description }}
-                            </p>
+                            <div class="prose prose-indigo max-w-none text-gray-800 leading-relaxed">
+                                {!! Str::markdown(e($folder->description)) !!}
+                            </div>
                         @else
                             <p class="text-sm text-gray-400 italic">
-                                No description provided.
+                                {{ __('No description provided.') }}
                             </p>
                         @endif
 
-                        <!-- Ссылка/Кнопка перехода (опционально, скрытая до наведения) -->
+                        <!-- Ссылка/Кнопка перехода -->
                         <div class="mt-4 pt-3 border-t border-gray-50 flex justify-end opacity-0 group-hover:opacity-100 transition">
                             <a href="{{ route('folders.show', $folder->id) }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                                Open folder
+                                {{ __('Open folder') }}
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                                 </svg>
@@ -76,7 +76,8 @@
             </div>
         @endif
     </div>
-    @push('styles')
+</x-layout>
+@push('styles')
         <style>
             /* Скругление углов для всех кнопок пагинации */
             .pagination-indigo nav span,

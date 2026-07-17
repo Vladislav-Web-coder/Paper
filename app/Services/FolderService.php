@@ -39,32 +39,19 @@ class FolderService
     public function ensureFolderExists(array $folders, $user): array
     {
         $folders = array_unique(array_filter($folders));
+        $folderIds = [];
 
-        if (empty($folders)) {
-            return [];
+        foreach ($folders as $folder) {
+            $name = trim($folder);
+            if (empty($name)) continue;
+
+            $folder = $user->folders()->firstOrCreate([
+                'name' => $name
+            ]);
+
+            $folderIds[] = $folder->id;
         }
 
-        $existingFolderNames = $user->folders()
-            ->whereIn('name', $folders)
-            ->pluck('name')
-            ->toArray();
-
-        $newFolderNames = array_diff($folders, $existingFolderNames);
-
-        if (!empty($newFolderNames)) {
-            $insertData = collect($newFolderNames)->map(fn ($name) => [
-                'name' => $name,
-                'user_id' => $user->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ])->toArray();
-
-            $user->folders()->insert($insertData);
-        }
-
-        return $user->folders()
-            ->whereIn('name', $folders)
-            ->pluck('id')
-            ->toArray();
+        return $folderIds;
     }
 }

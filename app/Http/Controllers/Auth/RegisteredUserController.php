@@ -24,6 +24,15 @@ class RegisteredUserController extends Controller
             'email' => $validated["email"],
             'password' => Hash::make($validated["password"]),
         ]);
+        $timezone = $request->cookie('browser_timezone', 'UTC');
+        $language = $request->cookie('browser_language', 'en');
+
+        $user->settings = $user->settings->update([
+            'timezone' => $timezone,
+            'language' => $language,
+        ]);
+
+        $user->save();
         event(new Registered($user));
         Auth::login($user);
         return redirect()

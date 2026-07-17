@@ -27,6 +27,12 @@ class LoginRequest extends FormRequest
             $email = strtolower(trim($email));
             $this->merge(['email' => $email]);
         }
+
+        if ($this->has('remember')) {
+            $this->merge([
+                'remember' => $this->boolean('remember')
+            ]);
+        }
     }
 
     /**

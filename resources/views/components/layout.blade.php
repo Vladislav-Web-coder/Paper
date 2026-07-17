@@ -9,9 +9,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
+    <script>
+        if (!document.cookie.includes('browser_timezone=')) {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (timezone) {
+                document.cookie = `browser_timezone=${encodeURIComponent(timezone);}; path=/; max-age=31536000; SameSite=Lax`;
+                window.location.reload();
+            }
+        }
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased font-sans flex flex-col min-h-screen">
 
+<!-- Шапка сайта -->
 <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div class="flex items-center gap-8">
@@ -25,7 +35,7 @@
             </a>
         </div>
 
-        <!-- Профиль, уведомления и переход в настройки -->
+        <!-- Переключатель языка, уведомления и профиль -->
         <div class="flex items-center gap-4">
             @auth
                 <x-notification-indicator />
@@ -53,17 +63,17 @@
             <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {{ session('success') }}
+            {{ __(session('success')) }}
         </div>
     @endif
 
-    <!-- Флеш-сообщение об ошибке (Исправлено: добавлен закрывающий тег div) -->
+    <!-- Флеш-сообщение об ошибке -->
     @if(session('error'))
         <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm font-medium flex items-center gap-2 shadow-sm">
             <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {{ session('error') }}
+            {{ __(session('error')) }}
         </div>
     @endif
 
@@ -77,15 +87,15 @@
 
             <!-- Колонка 1: О нас -->
             <div class="space-y-3 md:col-span-2">
-                <span class="text-base font-bold text-gray-900 tracking-tight block">About Us</span>
+                <span class="text-base font-bold text-gray-900 tracking-tight block">{{ __('About Us') }}</span>
                 <p class="text-sm text-gray-500 max-w-sm leading-relaxed">
-                    {{ config('app.name', 'Paper') }} is a minimal, blazing-fast personal workspace designed to organize your thoughts, sync encrypted notes, and structure folders seamlessly.
+                    {{ config('app.name', 'Paper') }} {{ __('is a minimal, blazing-fast personal workspace designed to organize your thoughts, sync encrypted notes, and structure folders seamlessly.') }}
                 </p>
             </div>
 
             <!-- Колонка 2: Соцсети -->
             <div class="space-y-3">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">Social Networks</span>
+                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">{{ __('Social Networks') }}</span>
                 <ul class="space-y-2 text-sm font-medium">
                     <li>
                         <a href="https://github.com" target="_blank" rel="noopener" class="text-gray-600 hover:text-indigo-600 transition flex items-center gap-1.5">
@@ -107,13 +117,13 @@
 
             <!-- Колонка 3: Поддержка -->
             <div class="space-y-3">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">Support</span>
+                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">{{ __('Support') }}</span>
                 <ul class="space-y-2 text-sm font-medium">
                     <li>
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">Documentation</a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">{{ __('Documentation') }}</a>
                     </li>
                     <li>
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">Help Center</a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">{{ __('Help Center') }}</a>
                     </li>
                 </ul>
             </div>

@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreNoteRequest;
 use App\Http\Requests\UpdateNoteRequest;
-use App\Models\Tag;
 use App\Services\NoteService;
 use App\Models\Note;
-use App\Models\Folder;
 use App\Services\SearchService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,9 +61,6 @@ class NoteController extends Controller
 
         return view('notes.index', ['notes' => $notes]);
     }
-
-
-
 
     /**
      * Show the form for creating a new resource.
