@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Note;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class NotePolicy
+class TagPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -19,9 +19,9 @@ class NotePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Note $note): Response
+    public function view(User $user, Tag $tag): Response
     {
-        return $user->id === $note->user_id ? Response::allow() : Response::denyAsNotFound();
+        return $user->id === $tag->user_id ? Response::allow() : Response::denyAsNotFound();
     }
 
     /**
@@ -29,29 +29,29 @@ class NotePolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return false;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Note $note): Response
+    public function update(User $user, Tag $tag): bool
     {
-        return $user->id === $note->user_id ? Response::allow() : Response::denyAsNotFound();
+        return false;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Note $note): bool
+    public function delete(User $user, Tag $tag): Response
     {
-        return $user->id === $note->user_id;
+        return $user->id === $tag->user_id ? Response::allow() : Response::denyAsNotFound();
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Note $note): bool
+    public function restore(User $user, Tag $tag): bool
     {
         return false;
     }
@@ -59,12 +59,8 @@ class NotePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Note $note): bool
+    public function forceDelete(User $user, Tag $tag): bool
     {
         return false;
-    }
-    public function pin(User $user, Note $note): bool
-    {
-        return $user->id === $note->user_id;
     }
 }

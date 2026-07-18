@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\TwoFactorService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,7 @@ class LogoutOtherDevicesController extends Controller
     public function __construct(protected TwoFactorService $twoFactorService)
     {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): RedirectResponse
     {
         $user = auth()->user();
         $is2faEnabled = (bool) ($user->settings->two_factor_enabled ?? false);

@@ -7,14 +7,16 @@ use App\Http\Requests\ConfirmPasswordRequest;
 use App\Http\Requests\UpdateSettingsRequest;
 use App\Services\SettingsService;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
     public function __construct(protected SettingsService $settingsService)
     {}
 
-    public function show(Request $request, ?string $tab = 'interface')
+    public function show(Request $request, ?string $tab = 'interface'): RedirectResponse|View
     {
         if(!in_array($tab, SettingsTab::values())) {
             return redirect()
@@ -39,13 +41,13 @@ class SettingsController extends Controller
         ], $additionalData);
     }
 
-    public function confirmPassword(ConfirmPasswordRequest $request)
+    public function confirmPassword(ConfirmPasswordRequest $request): RedirectResponse
     {
         session(['last_confirmed_password_at' => now()]);
         return redirect()->route('settings.show', SettingsTab::PRIVACY->value);
     }
 
-    public function update(UpdateSettingsRequest $request)
+    public function update(UpdateSettingsRequest $request): RedirectResponse
     {
         $tab = $request->current_tab;
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Notifications\EmailChangeRequestedNotification;
 use App\Notifications\VerifyNewEmailNotification;
 use App\Services\TwoFactorService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -12,10 +13,10 @@ use Illuminate\Support\Facades\URL;
 
 class EmailChangeController extends Controller
 {
-    public function __construct(public TwoFactorService $twoFactorService)
+    public function __construct(protected TwoFactorService $twoFactorService)
     {}
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): RedirectResponse
     {
         $user = auth()->user();
 

@@ -8,17 +8,19 @@ use App\Models\Folder;
 use App\Models\Note;
 use App\Models\Tag;
 use App\Services\FolderService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class FolderController extends Controller
 {
-    public function __construct(public FolderService $folderService)
+    public function __construct(protected FolderService $folderService)
     {}
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         Gate::authorize('viewAny', Folder::class);
 
@@ -54,13 +56,13 @@ class FolderController extends Controller
     }
 
 
-    public function create()
+    public function create(): View
     {
         Gate::authorize('create', Folder::class);
 
         return view('folders.create');
     }
-    public function store(StoreFolderRequest $request)
+    public function store(StoreFolderRequest $request): RedirectResponse
     {
         $data = $request->validated();
 
@@ -68,7 +70,7 @@ class FolderController extends Controller
         return redirect()
             ->route('folders.show', $folder);
     }
-    public function show(Request $request, Folder $folder)
+    public function show(Request $request, Folder $folder): View
     {
         Gate::authorize('view', $folder);
 
@@ -107,13 +109,13 @@ class FolderController extends Controller
         ]);
     }
 
-    public function edit(Folder $folder)
+    public function edit(Folder $folder): View
     {
         Gate::authorize('update', $folder);
         return view('folders.edit', ['folder' => $folder]);
 
     }
-    public function update(UpdateFolderRequest $request, Folder $folder)
+    public function update(UpdateFolderRequest $request, Folder $folder): RedirectResponse
     {
         $data = $request->validated();
         $folder = $this->folderService->updateFolder($data, $folder);
@@ -123,7 +125,7 @@ class FolderController extends Controller
             ->with('success', 'Folder updated successfully.');
     }
 
-    public function destroy(Folder $folder)
+    public function destroy(Folder $folder): RedirectResponse
     {
         Gate::authorize('delete', $folder);
 

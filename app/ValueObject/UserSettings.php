@@ -57,4 +57,6 @@ final readonly class UserSettings implements Arrayable
             'two_factor_enabled' => $this->two_factor_enabled,
         ];
     }
+
+
 }

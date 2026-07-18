@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
@@ -19,7 +21,6 @@ class NotificationController extends Controller
         $jsonString = Cache::tags(["user:{$user->id}:notifications"])
             ->remember("user_{$user->id}_notifications_json_page_{$page}", now()->addMinutes(10), function () use ($user, $perPage) {
                 $paginator = $user->notifications()->latest()->paginate($perPage);
-
                 return json_encode([
                     'items' => $paginator->getCollection()->toArray(),
                     'total' => $paginator->total(),
@@ -27,14 +28,11 @@ class NotificationController extends Controller
             });
 
         $cached = json_decode($jsonString, true);
-
         $notificationsCollection = collect($cached['items'])->map(function (array $attributes) {
             $notification = new DatabaseNotification();
-
             if (isset($attributes['data']) && is_array($attributes['data'])) {
                 $attributes['data'] = json_encode($attributes['data']);
             }
-
             $notification->setRawAttributes($attributes, true);
             $notification->exists = true;
             return $notification;
@@ -53,7 +51,10 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function markAsRead(Request $request, DatabaseNotification $notification) {
+    public function markAsRead(Request $request, DatabaseNotification $notification): RedirectResponse
+    {
+        Gate::authorize('markAsRead', $notification);
+
         $user = $request->user();
         if($notification->notifiable_id !== $user->id) {
             abort(403);
@@ -65,16 +66,21 @@ class NotificationController extends Controller
         return back()->with('success', 'Notification marked as read');
     }
 
-    public function markAsReadAll(Request $request) {
+    public function markAsReadAll(Request $request): RedirectResponse
+    {
         $user = $request->user();
         $user->unreadNotifications->markAsRead();
 
-        Cache::tags(["user:{$user->id}:notifications"])->flush(); Cache::tags(["user:{$user->id}:notifications"])->flush();
+        Cache::tags(["user:{$user->id}:notifications"])->flush();
 
         return back()->with('success', 'All notifications marked as read');
     }
-    public function destroy(Request $request, DatabaseNotification $notification) {
-        $user = $request->user();
+    public function destroy(Request $request, DatabaseNotification $notification): RedirectResponse
+    {
+       Gate::authorize('delete', $notification);
+
+       $user = $request->user();
+
        if($notification->notifiable_id !== $user->id) {
            abort(403);
        }
@@ -85,7 +91,9 @@ class NotificationController extends Controller
        return back()->with('success', 'Notification deleted successfully');
     }
 
-    public function clearAll(Request $request) {
+    public function clearAll(Request $request): RedirectResponse
+    {
+        Gate::authorize('deleteAll', DatabaseNotification::class);
         $user = $request->user();
         $user->notifications()->delete();
 

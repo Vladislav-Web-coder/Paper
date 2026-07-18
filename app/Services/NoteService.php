@@ -76,7 +76,8 @@ class NoteService
             return $note;
         });
     }
-    protected function ensureTagsExist(array $tags, $user): array {
+    protected function ensureTagsExist(array $tags, $user): array
+    {
         $tags = array_unique(array_filter($tags));
         $tagsIds = [];
 

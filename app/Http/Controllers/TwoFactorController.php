@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Services\TwoFactorService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class TwoFactorController extends Controller
 {
-    public function __construct(public TwoFactorService $service)
+    public function __construct(protected TwoFactorService $service)
     {}
 
-    public function showSetup()
+    public function showSetup(): RedirectResponse|View
     {
         $user = auth()->user();
 
@@ -25,7 +27,7 @@ class TwoFactorController extends Controller
             'secret' => $data['secret'],
         ]);
     }
-    public function enable(Request $request)
+    public function enable(Request $request): RedirectResponse
     {
         $request->validate(['code' => 'required|digits:6']);
         $code = $request->code;
@@ -37,13 +39,13 @@ class TwoFactorController extends Controller
         }
         return redirect()->route('settings.show', ['tab' => 'privacy'])->with('success', 'Two factor authentication enabled.');
     }
-    public function disable()
+    public function disable(): RedirectResponse
     {
         $user = auth()->user();
         $this->service->disableTwoFactor($user);
         return redirect()->route('settings.show', ['tab' => 'privacy'])->with('success', '2FA disabled.');
     }
-    public function showLogin()
+    public function showLogin(): RedirectResponse|View
     {
         if(!session()->has('auth.2fa.attempted_user_id')) {
             auth()->logout();
@@ -54,7 +56,7 @@ class TwoFactorController extends Controller
         }
         return view('settings.two-factor-login');
     }
-    public function verifyLogin(Request $request)
+    public function verifyLogin(Request $request): RedirectResponse
     {
         $request->validate(['code' => 'required|string']);
         $user = auth()->user();

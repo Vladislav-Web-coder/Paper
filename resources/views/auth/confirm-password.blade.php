@@ -1,4 +1,4 @@
-<x-layout>
+<x-app-layout>
     <x-slot name="title">{{ __('Confirm Password') }}</x-slot>
 
     <div class="max-w-md mx-auto my-12">
@@ -45,4 +45,4 @@
             </form>
         </div>
     </div>
-</x-layout>
+</x-app-layout>

@@ -1,4 +1,4 @@
-<x-layout>
+<x-app-layout>
     <x-slot name="title">{{ __('Verify Email') }}</x-slot>
 
     <div class="max-w-md mx-auto my-12">
@@ -49,4 +49,4 @@
             </div>
         </div>
     </div>
-</x-layout>
+</x-app-layout>

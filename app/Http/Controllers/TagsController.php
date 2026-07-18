@@ -4,13 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Note;
 use App\Models\Tag;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class TagsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
+        Gate::authorize('viewAny', Tag::class);
+
         $user = $request->user();
         $cachedTagsData = Cache::tags(["user:{$user->id}:notes"])
             ->remember("user_{$user->id}_all_tags", now()->addMinutes(30), function () use ($user) {
@@ -32,8 +37,10 @@ class TagsController extends Controller
         });
         return view('tags.index', ['tags' => $tags]);
     }
-    public function show(Request $request, Tag $tag)
+    public function show(Request $request, Tag $tag): View
     {
+        Gate::authorize('view', $tag);
+
         $user = $request->user();
         $noteIds = Cache::tags(["user:{$user->id}:notes"])
             ->remember("user:{$user->id}:tag:{$tag->id}:notes", now()->addMinutes(30), function () use ($user, $tag) {
@@ -50,12 +57,10 @@ class TagsController extends Controller
                 ->get();
         return view('tags.show', ['tag' => $tag, 'notes' => $notes]);
     }
-    public function update(Request $request)
+    public function destroy(Request $request, Tag $tag): RedirectResponse
     {
-        //
-    }
-    public function destroy(Request $request, Tag $tag)
-    {
+        Gate::authorize('delete', $tag);
+
         $user = $request->user();
         $tag->notes()->detach();
         $tag->delete();

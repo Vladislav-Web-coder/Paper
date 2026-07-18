@@ -21,7 +21,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
             ->subject('Welcome to ' . config('app.name', 'Paper') . '!')
             ->greeting('Welcome, ' . $notifiable->name . '!')
             ->line('Thank you for registering. Paper is your minimal personal workspace designed to organize your thoughts and notes securely.')
-            ->action('Go to Dashboard', url('/dashboard'))
+            ->action('Go to Dashboard', route('dashboard'))
             ->line('If you have any questions, feel free to reply to this email.');
     }
     public function toArray(mixed $notifiable): array

@@ -17,11 +17,13 @@ use Symfony\Component\Mime\HtmlToTextConverter\LeagueHtmlToMarkdownConverter;
 
 class NoteController extends Controller
 {
-    public function __construct(public NoteService $noteService) {}
+    public function __construct(protected NoteService $noteService)
+    {}
 
     public function index(Request $request, SearchService $searchService): View
     {
         Gate::authorize('viewAny', Note::class);
+
         $user = $request->user();
         $search = $request->input('search');
 
@@ -68,6 +70,7 @@ class NoteController extends Controller
     public function create(Request $request): View
     {
         Gate::authorize('create', Note::class);
+
         $user = $request->user();
         $folders = $user->folders()->pluck('name','id');
         $tags = $user->tags()->pluck('name','id');
@@ -93,7 +96,7 @@ class NoteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, Note $note)
+    public function show(Request $request, Note $note): View
     {
         Gate::authorize('view', $note);
         return view('notes.show', ['note' => $note]);
@@ -121,7 +124,7 @@ class NoteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateNoteRequest $request, $id)
+    public function update(UpdateNoteRequest $request, $id): RedirectResponse
     {
         $data = $request->validated();
         $note = $this->noteService->updateNote($data, $id);
@@ -154,6 +157,8 @@ class NoteController extends Controller
     }
     public function pin(Request $request,Note $note): RedirectResponse
     {
+        Gate::authorize('pin', $note);
+
         $user = $request->user();
         if($note->user_id !== $user->id) {
             abort(403);
