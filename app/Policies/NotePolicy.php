@@ -63,4 +63,8 @@ class NotePolicy
     {
         return false;
     }
+    public function pin(User $user, Note $note): bool
+    {
+        return $user->id === $note->user_id;
+    }
 }

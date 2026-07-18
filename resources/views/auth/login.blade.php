@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Auth — {{ config('app.name', 'Paper') }}</title>
+    <title> {{ config('app.name', 'Paper') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -16,12 +16,12 @@
         {{ config('app.name', 'Paper') }}
     </a>
     <h2 class="mt-6 text-center text-2xl font-bold text-gray-900 tracking-tight">
-        Login
+        {{ __('Login') }}
     </h2>
     <p class="mt-2 text-center text-sm text-gray-500">
-        Or
+        {{ __('Or') }}
         <a href="/register" class="font-medium text-indigo-600 hover:text-indigo-500 transition">
-            Register now
+            {{ __('Register now') }}
         </a>
     </p>
 </div>
@@ -32,7 +32,7 @@
             <div class="mb-4 p-4 bg-rose-50 border border-rose-100 rounded-xl">
                 <ul class="list-disc list-inside text-sm text-rose-800 space-y-1">
                     @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                        <li>{{ __($error) }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -41,7 +41,7 @@
             @csrf
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">
-                    Email
+                    {{ __('Email') }}
                 </label>
                 <div class="mt-1">
                     <input id="email"
@@ -58,11 +58,11 @@
             <div>
                 <div class="flex items-center justify-between">
                     <label for="password" class="block text-sm font-medium text-gray-700">
-                        Password
+                        {{ __('Password') }}
                     </label>
                     <div class="text-sm">
                         <a href="{{ route('password.request') }}" class="font-medium text-indigo-600 hover:text-indigo-500 transition">
-                            Forgot password?
+                            {{ __('Forgot password?') }}
                         </a>
                     </div>
                 </div>
@@ -79,13 +79,16 @@
 
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
+                    <input type="hidden" name="remember" value="false">
                     <input id="remember"
                            name="remember"
                            type="checkbox"
+                           value="true"
                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-md"
+                        {{ old('remember') === 'true' ? 'checked' : ''}}
                     >
                     <label for="remember" class="ml-2 block text-sm text-gray-600">
-                        Remember me
+                        {{ __('Remember me') }}
                     </label>
                 </div>
             </div>
@@ -93,7 +96,7 @@
                 <button type="submit"
                         class="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
                 >
-                    Login
+                    {{ __('Login') }}
                 </button>
             </div>
         </form>

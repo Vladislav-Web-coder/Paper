@@ -17,6 +17,36 @@ class StoreNoteRequest extends FormRequest
     {
         return $this->user()->can('create', Note::class);
     }
+    protected function prepareForValidation()
+    {
+        $existingTags = $this->input('tags_name', []);
+        $newTags = $this->input('new_tags', [], '');
+
+        $filterTags = collect(explode(',', $newTags))
+            ->map(fn($tag) => trim($tag))
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $tags = array_unique(array_merge($existingTags, $filterTags));
+        $this->merge([
+            'tags_name' => empty($tags) ? null : $tags,
+        ]);
+
+        $existingFolders = $this->input('folder_name', []);
+        $newFolders = $this->input('new_folders', '');
+
+        $filterFolders = collect(explode(',', $newFolders))
+            ->map(fn($tag) => trim($tag))
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $folders = array_unique(array_merge($existingFolders, $filterFolders));
+        $this->merge([
+            'folder_name' => empty($folders) ? null : $folders,
+        ]);
+    }
     /**
      * Get the validation rules that apply to the request.
      *

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Note;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class NoteService
 {
@@ -75,32 +76,29 @@ class NoteService
             return $note;
         });
     }
-    private function ensureTagsExist(array $tags, $user): array {
-        $tags = array_unique($tags);
-        $existingTags = $user->tags()
-            ->whereIn('name', $tags)
-            ->pluck('name')
-            ->toArray();
-        $missingNames = array_diff($tags, $existingTags);
-        if(!empty($missingNames)) {
-            $insertData = collect($missingNames)->map(fn($name) => [
-                'name' => $name,
-                'user_id' => $user->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ])->toArray();
+    protected function ensureTagsExist(array $tags, $user): array
+    {
+        $tags = array_unique(array_filter($tags));
+        $tagsIds = [];
 
-            $user->tags()->insert($insertData);
+        foreach ($tags as $tag) {
+            $name = trim($tag);
+            if(empty($name)) continue;
 
+            $tag = $user->tags()->firstOrCreate([
+                    'name' => $name
+            ]);
+
+            $tagsIds[] = $tag->id;
         }
-        return $user->tags()->whereIn('name', $tags)->pluck('id')->toArray();
+        return $tagsIds;
     }
 
     public function clearFolderCacheByFolderId(int $userId, int $folderId): void
     {
-        $redis = redis();
+        $redis = Redis::connection();
         $prefix = config('database.redis.options.prefix', '');
-        $mask = $prefix . 'user:{$userId}:folder:{$folderId}:page:*';
+        $mask = "{$prefix}user:{$userId}:folder:{$folderId}:page:*";
 
         $key = $redis->keys($mask);
 

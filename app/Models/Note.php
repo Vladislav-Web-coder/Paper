@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class Note extends Model
@@ -63,6 +65,38 @@ class Note extends Model
             'content' => $this->content,
             'id' => $this->id,
         ]);
+    }
+
+    protected function createdAt(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if(!$value) return null;
+
+                $timezone = config('app.timezone', 'UTC');
+
+                return Carbon::parse($value, 'UTC')->setTimezone($timezone);
+            },
+            set: function ($value) {
+                return Carbon::parse($value)->setTimezone('UTC');
+            }
+        );
+    }
+
+    protected function updatedAt(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if(!$value) return null;
+
+                $timezone = config('app.timezone', 'UTC');
+
+                return Carbon::parse($value, 'UTC')->setTimezone($timezone);
+            },
+            set: function ($value) {
+                return Carbon::parse($value)->setTimezone('UTC');
+            }
+        );
     }
 
 }

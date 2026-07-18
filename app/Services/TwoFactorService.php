@@ -65,13 +65,15 @@ class TwoFactorService
         return true;
     }
 
-    public function disableTwoFactor($user): void {
+    public function disableTwoFactor($user): void
+    {
         $user->two_factor_secret = null;
         $user->two_factor_recovery_codes = null;
         $user->settings = $user->settings->update(['two_factor_enabled' => false]);
         $user->save();
     }
-    public function verifyTwoFactor($user, $code) {
+    public function verifyTwoFactor($user, $code): bool
+    {
         $inputCode = Str::upper(trim($code));
 
         if(is_numeric($inputCode) && strlen($inputCode) == 6) {

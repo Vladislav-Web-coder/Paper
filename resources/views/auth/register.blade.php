@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Register — {{ config('app.name', 'Paper') }}</title>
+    <title>{{ __('Register') }} — {{ config('app.name', 'Paper') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -16,12 +16,12 @@
         {{ config('app.name', 'Laravel AppLayout') }}
     </a>
     <h2 class="mt-6 text-center text-2xl font-bold text-gray-900 tracking-tight">
-        Create your account
+        {{ __('Create your account') }}
     </h2>
     <p class="mt-2 text-center text-sm text-gray-500">
-        Or
+        {{ __('Or') }}
         <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500 transition">
-            Log in
+            {{ __('Log in') }}
         </a>
     </p>
 </div>
@@ -32,7 +32,7 @@
             <div class="mb-4 p-4 bg-rose-50 border border-rose-100 rounded-xl">
                 <ul class="list-disc list-inside text-sm text-rose-800 space-y-1">
                     @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                        <li>{{ __($error) }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -41,7 +41,7 @@
             @csrf
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700">
-                    Enter your name
+                    {{ __('Enter your name') }}
                 </label>
                 <div class="mt-1">
                     <input id="name"
@@ -56,7 +56,7 @@
             </div>
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">
-                    Email
+                    {{ __('Email') }}
                 </label>
                 <div class="mt-1">
                     <input id="email"
@@ -71,7 +71,7 @@
             </div>
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">
-                    Password
+                    {{ __('Password') }}
                 </label>
                 <div class="mt-1">
                     <input id="password"
@@ -85,7 +85,7 @@
             </div>
             <div>
                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
-                    Confirm the password
+                    {{ __('Confirm the password') }}
                 </label>
                 <div class="mt-1">
                     <input id="password_confirmation"
@@ -101,7 +101,7 @@
                 <button type="submit"
                         class="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
                 >
-                    Register
+                    {{ __('Register') }}
                 </button>
             </div>
         </form>

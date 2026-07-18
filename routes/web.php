@@ -1,6 +1,4 @@
 <?php
-
-<<<<<<< HEAD
 use App\Http\Controllers\Api\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NoteController;
@@ -10,14 +8,9 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Middleware\CheckTwoFactor;
-=======
-use Illuminate\Support\Facades\Route;
->>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
+use App\Http\Controllers\TagsController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-<<<<<<< HEAD
+Route::get('/', \App\Http\Controllers\LandingController::class)->name('landing');
 
 Route::middleware('auth')->group(function () {
     Route::middleware([CheckTwoFactor::class])->group(function () {
@@ -41,7 +34,11 @@ Route::middleware('auth')->group(function () {
         Route::middleware('verified')->group(function () {
             Route::patch('/notes/{note}/pin', [NoteController::class, 'pin'])->name('notes.pin');
             Route::resource('notes', NoteController::class);
-            Route::resource('folders', FolderController::class)->except(['create', 'edit']);
+            Route::resource('folders', FolderController::class);
+
+            Route::get('/tags', [TagsController::class, 'index'])->name('tags.index');
+            Route::get('/tags/{tag}', [TagsController::class, 'show'])->name('tags.show');
+            Route::delete('/tags/{tag}', [TagsController::class, 'destroy'])->name('tags.destroy');
 
             Route::middleware(['web','auth'])->get('/telegram/connect', [TelegramWebhookController::class, 'connect'])->name('telegram.connect');
 
@@ -49,6 +46,8 @@ Route::middleware('auth')->group(function () {
                 Route::get('/{tab?}', [SettingsController::class, 'show'])->name('show');
                 Route::post('/privacy/confirm', [SettingsController::class, 'confirmPassword'])->name('confirm_password');
                 Route::patch('/settings', [SettingsController::class, 'update'])->name('update');
+                Route::post('/change-email', \App\Http\Controllers\EmailChangeController::class)->name('email.change.request');
+                Route::post('/sessions/logout', \App\Http\Controllers\LogoutOtherDevicesController::class)->name('sessions.logout');
             });
         });
 
@@ -56,5 +55,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-=======
->>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86

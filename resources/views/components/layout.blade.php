@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      class="{{ auth()->user()?->settings?->theme === 'dark' ? 'dark' : '' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,11 +10,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
+    <script>
+        if (!document.cookie.includes('browser_timezone=')) {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (timezone) {
+                document.cookie = `browser_timezone=${encodeURIComponent(timezone);}; path=/; max-age=31536000; SameSite=Lax`;
+                window.location.reload();
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased font-sans flex flex-col min-h-screen">
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 antialiased font-sans flex flex-col min-h-screen">
 
 <!-- Шапка сайта -->
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+<header class="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div class="flex items-center gap-8">
             <a href="{{ route('dashboard') }}" class="text-xl font-bold text-indigo-500 tracking-tight flex items-center gap-2">
@@ -26,20 +36,10 @@
             </a>
         </div>
 
-        <!-- Профиль, уведомления и переход в настройки -->
+        <!-- Переключатель языка, уведомления и профиль -->
         <div class="flex items-center gap-4">
             @auth
-                <a href="{{ route('notifications.index') }}" class="p-2 text-gray-400 hover:text-indigo-600 bg-gray-50 border border-gray-100 rounded-xl hover:border-indigo-100 transition relative">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    @if(auth()->user()->unreadNotifications->isNotEmpty())
-                        <span class="absolute top-1 right-1 flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
-                        </span>
-                    @endif
-                </a>
+                <x-notification-indicator />
 
                 <a href="{{ route('settings.show') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200 transition text-gray-600 hover:text-indigo-600 group shadow-sm/50">
                     <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition">
@@ -55,28 +55,59 @@
     </div>
 </header>
 
-<!-- Основной контент (Растягивается, прижимая футер вниз) -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full relative">
 
-    <!-- Флеш-сообщение об успехе -->
-    @if(session('success'))
-        <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center gap-2 shadow-sm">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {{ session('success') }}
-        </div>
-    @endif
+    <!-- Контейнер для уведомлений в правом верхнем углу -->
+    <div class="fixed top-4 right-4 z-[100] flex flex-col gap-3 max-w-sm w-full px-4 sm:px-0">
 
-    <!-- Флеш-сообщение об ошибке (Исправлено: добавлен закрывающий тег div) -->
-    @if(session('error'))
-        <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm font-medium flex items-center gap-2 shadow-sm">
-            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {{ session('error') }}
-        </div>
-    @endif
+        <!-- Флеш-сообщение об успехе -->
+        @if(session('success'))
+            <div x-data="{ show: true }"
+                 x-init="setTimeout(() => show = false, 5000)"
+                 x-show="show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-y-2 sm:translate-y-0 sm:translate-x-2"
+                 x-transition:enter-end="opacity-100 transform translate-y-0 sm:translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center justify-between gap-2 shadow-lg backdrop-blur-sm bg-white/90">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ __(session('success')) }}</span>
+                </div>
+                <button @click="show = false" class="text-emerald-400 hover:text-emerald-600 transition shrink-0 ml-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        @endif
+
+        <!-- Флеш-сообщение об ошибке -->
+        @if(session('error'))
+            <div x-data="{ show: true }"
+                 x-init="setTimeout(() => show = false, 5000)"
+                 x-show="show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-y-2 sm:translate-y-0 sm:translate-x-2"
+                 x-transition:enter-end="opacity-100 transform translate-y-0 sm:translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm font-medium flex items-center justify-between gap-2 shadow-lg backdrop-blur-sm bg-white/90">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ __(session('error')) }}</span>
+                </div>
+                <button @click="show = false" class="text-rose-400 hover:text-rose-600 transition shrink-0 ml-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        @endif
+    </div>
 
     {{ $slot }}
 </main>
@@ -88,15 +119,15 @@
 
             <!-- Колонка 1: О нас -->
             <div class="space-y-3 md:col-span-2">
-                <span class="text-base font-bold text-gray-900 tracking-tight block">About Us</span>
+                <span class="text-base font-bold text-gray-900 tracking-tight block">{{ __('About Us') }}</span>
                 <p class="text-sm text-gray-500 max-w-sm leading-relaxed">
-                    {{ config('app.name', 'Paper') }} is a minimal, blazing-fast personal workspace designed to organize your thoughts, sync encrypted notes, and structure folders seamlessly.
+                    {{ config('app.name', 'Paper') }} {{ __('is a minimal, blazing-fast personal workspace designed to organize your thoughts, sync encrypted notes, and structure folders seamlessly.') }}
                 </p>
             </div>
 
             <!-- Колонка 2: Соцсети -->
             <div class="space-y-3">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">Social Networks</span>
+                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">{{ __('Social Networks') }}</span>
                 <ul class="space-y-2 text-sm font-medium">
                     <li>
                         <a href="https://github.com" target="_blank" rel="noopener" class="text-gray-600 hover:text-indigo-600 transition flex items-center gap-1.5">
@@ -118,13 +149,13 @@
 
             <!-- Колонка 3: Поддержка -->
             <div class="space-y-3">
-                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">Support</span>
+                <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider block">{{ __('Support') }}</span>
                 <ul class="space-y-2 text-sm font-medium">
                     <li>
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">Documentation</a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">{{ __('Documentation') }}</a>
                     </li>
                     <li>
-                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">Help Center</a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-600 transition block">{{ __('Help Center') }}</a>
                     </li>
                 </ul>
             </div>

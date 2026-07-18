@@ -1,7 +1,8 @@
-<<<<<<< HEAD
 import EasyMDE from 'easymde';
+import { marked } from 'marked';
+import Alpine from 'alpinejs';
 
+window.Alpine = Alpine;
+Alpine.start();
 window.EasyMDE = EasyMDE;
-=======
-//
->>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
+window.marked = marked;

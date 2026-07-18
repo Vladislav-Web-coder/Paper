@@ -34,11 +34,7 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-<<<<<<< HEAD
     'telegram' => [
         'token' => env('TELEGRAM_BOT_TOKEN'),
     ]
-=======
->>>>>>> 2fcb0d02d284ef33586cab99db3b7e99f28e3c86
-
 ];
